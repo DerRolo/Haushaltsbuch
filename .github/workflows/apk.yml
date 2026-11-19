@@ -29,6 +29,35 @@ jobs:
       - name: Android-Projekt erzeugen
         run: npx cap add android
 
+      - name: Icon einsetzen
+        run: |
+          python -m pip install Pillow
+          python - <<'PY'
+          from PIL import Image
+          import os
+
+          source = Image.open("www/icon-512.png").convert("RGBA")
+
+          sizes = {
+              "mdpi": 48,
+              "hdpi": 72,
+              "xhdpi": 96,
+              "xxhdpi": 144,
+              "xxxhdpi": 192
+          }
+
+          for density, size in sizes.items():
+              folder = f"android/app/src/main/res/mipmap-{density}"
+              os.makedirs(folder, exist_ok=True)
+
+              icon = source.resize((size, size), Image.Resampling.LANCZOS)
+
+              icon.save(f"{folder}/ic_launcher.png")
+              icon.save(f"{folder}/ic_launcher_round.png")
+
+          print("Android-App-Icons erfolgreich erstellt.")
+          PY
+
       - name: Web-App ins Projekt kopieren
         run: npx cap sync android
 
