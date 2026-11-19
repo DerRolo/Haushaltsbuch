@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0E6B5B"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0}body{font:14px/1.45 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Haushaltsbuch</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: schmale Spalte (max 760px), Kopfzeile mit Vermögen, Tab-Leiste unten am Handy / oben am PC, Formulare als Bottom-Sheet */
+:root{
+  --bg:#F2F4F3; --surface:#FFFFFF; --ink:#15201C; --muted:#5E6B66; --line:#DCE2DF;
+  --accent:#0E6B5B; --accent-ink:#FFFFFF; --soft:#E4EEEB; --pos:#16794A; --neg:#B23A2E; --warn:#9A6A12;
+  --c1:#0E6B5B; --c2:#2F5FA8; --c3:#B7791F; --c4:#8A4F9E; --scrim:rgba(10,20,16,.45);
+  --f-head:'Space Grotesk',system-ui,sans-serif; --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1412; --surface:#171E1B; --ink:#E5ECE8; --muted:#97A39E; --line:#2A3430;
+  --accent:#4DBFA3; --accent-ink:#0B1411; --soft:#1F2C28; --pos:#5CCB93; --neg:#F0877B; --warn:#E0B05A;
+  --c1:#4DBFA3; --c2:#7FA6E8; --c3:#E0B05A; --c4:#C79AD8; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1412; --surface:#171E1B; --ink:#E5ECE8; --muted:#97A39E; --line:#2A3430;
+  --accent:#4DBFA3; --accent-ink:#0B1411; --soft:#1F2C28; --pos:#5CCB93; --neg:#F0877B; --warn:#E0B05A;
+  --c1:#4DBFA3; --c2:#7FA6E8; --c3:#E0B05A; --c4:#C79AD8; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 84px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+#app{max-width:760px;margin:0 auto}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:14px 0 10px;border-bottom:1px solid var(--line)}
+header.top h1{font:700 20px/1.1 var(--f-head);margin:0;letter-spacing:-.01em}
+header.top .sum{font:500 12px var(--f-body);color:var(--muted);margin-top:3px}
+header.top .sum b{font-family:var(--f-head);font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.sync{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--pos);display:inline-block}
+.sync.wait i{background:var(--warn)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);display:flex;overflow-x:auto;padding:0 max(8px,env(safe-area-inset-left,0px)) env(safe-area-inset-bottom,0px) max(8px,env(safe-area-inset-right,0px));scrollbar-width:none}
+nav.tabs button{flex:1 0 auto;min-width:76px;border:0;background:none;padding:13px 10px;font-weight:500;color:var(--muted);border-top:2px solid transparent;white-space:nowrap}
+nav.tabs button.on{color:var(--accent);border-top-color:var(--accent)}
+@media (min-width:860px){
+  nav.tabs{position:static;border:0;border-bottom:1px solid var(--line);background:none;padding:0;margin:0 auto;max-width:760px}
+  nav.tabs button{border-top:0;border-bottom:2px solid transparent;margin-bottom:-1px}
+  nav.tabs button.on{border-bottom-color:var(--accent)}
+  body{padding-block:0 40px}
+}
+main{padding:16px 0 8px;display:flex;flex-direction:column;gap:16px}
+h2{font:700 16px/1.2 var(--f-head);margin:0}
+h3{font:600 12px/1.2 var(--f-body);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.flat{padding:0;gap:0;overflow:hidden}
+.muted{color:var(--muted)} .small{font-size:12px}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.big{font:700 24px/1.1 var(--f-head);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12px;color:var(--muted);font-weight:500}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 11px;width:100%;min-width:0;min-height:42px}
+input[type=checkbox]{width:auto;min-height:0}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.amt-in{font:700 22px var(--f-head);font-variant-numeric:tabular-nums}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.row2.keep{grid-template-columns:1fr 1fr}}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 14px;font-weight:600;min-height:42px}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.dng{color:var(--neg)}
+.btn.sm{padding:6px 10px;min-height:32px;font-size:12px}
+.btn.ghost{background:none}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 11px;font-size:13px;min-height:32px}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip.tpl{background:var(--surface);text-align:left;line-height:1.2}
+.chip.tpl small{display:block;color:var(--muted);font-size:11px}
+.grp{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 -2px}
+.list{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 14px;min-width:0}
+.list>.row:first-child{border-top:0}
+.row .d{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.row .mid{min-width:0;display:flex;flex-direction:column}
+.row .mid b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .mid small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .amt{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kv{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
+.list>.kv:first-child{border-top:0}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--soft);color:var(--ink);margin-right:4px}
+.tag.st{background:var(--accent);color:var(--accent-ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);flex-wrap:wrap}
+.seg button{border:0;background:none;padding:7px 12px;font-weight:500;color:var(--muted)}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.bar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th,td{padding:7px 10px;text-align:right;border-top:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;border-top:0}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--soft)}
+tfoot td{font-weight:700}
+.bar-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.banner{background:var(--soft);border:1px solid var(--accent);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.empty{padding:22px 14px;text-align:center;color:var(--muted)}
+#modal{position:fixed;inset:0;z-index:40;background:var(--scrim);display:none;align-items:flex-end;justify-content:center}
+#modal.open{display:flex}
+#modal .sheet{background:var(--surface);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:14px 14px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+@media (min-width:700px){#modal{align-items:center}#modal .sheet{border-radius:14px}}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;z-index:50;font-weight:500;max-width:90%;display:none}
+#toast.on{display:block}
+svg text{fill:var(--muted);font:10px var(--f-body)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+details{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--bg)}
+details[open]{display:flex;flex-direction:column;gap:10px}
+summary{cursor:pointer;font-weight:500}
+@media (prefers-reduced-motion:no-preference){.chip,.btn{transition:background .12s}}
+</style>
+
+<div id="app">
+  <header class="top">
+    <div><h1>Haushaltsbuch</h1><div class="sum" id="hsum">Lade Daten …</div></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <div class="sync wait" id="sync"><i></i><span>verbinde …</span></div>
+      <button class="btn sm ghost" data-act="go" data-v="einstellungen">Einstellungen</button>
+    </div>
+  </header>
+  <nav class="tabs" id="tabs"></nav>
+  <main id="main"></main>
+</div>
+<datalist id="dl-names"></datalist>
+<datalist id="dl-groups"></datalist>
+<div id="modal"><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js"></script>
+<script src="gh.js"></script>
+<script>
+'use strict';
+/* ---------- Hilfsfunktionen ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf=new Intl.NumberFormat('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2});
+const nf0=new Intl.NumberFormat('de-DE',{maximumFractionDigits:0});
+const r2=n=>(Math.round(n*100)/100)||0;
+const eur=n=>nf.format(r2(n))+' €';
+const pad=n=>String(n).padStart(2,'0');
+const isoOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>isoOf(new Date());
+const pd=s=>{const m=/^(\d{4})-(\d\d)-(\d\d)/.exec(s||'');return m?m[3]+'.'+m[2]+'.'+m[1]:(s||'')};
+const pds=s=>{const m=/^(\d{4})-(\d\d)-(\d\d)/.exec(s||'');return m?m[3]+'.'+m[2]+'.':(s||'')};
+const parseNum=s=>{s=String(s==null?'':s).trim().replace(/\s/g,'').replace('€','');if(!s)return NaN;if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');const v=parseFloat(s);return isFinite(v)?v:NaN};
+const numIn=n=>String(Math.round(n*100)/100).replace('.',',');
+const MON=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const MONL=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const lc=s=>String(s||'').trim().toLowerCase();
+const sgn=(n,plus)=>{n=r2(n);return(n<0?'−':(plus&&n>0?'+':''))+nf.format(Math.abs(n))+' €'};
+function addM(iso,n,anchor){const p=iso.split('-').map(Number);const t=p[0]*12+(p[1]-1)+n;const y=Math.floor(t/12),m=t%12;const dim=new Date(y,m+1,0).getDate();return y+'-'+pad(m+1)+'-'+pad(Math.min(anchor,dim))}
+function dues(r,until){const out=[],a=+r.start.slice(8,10);for(let k=0;k<700;k++){const d=addM(r.start,r.iv*k,a);if(d>until)break;if(!r.last||d>r.last)out.push(d)}return out}
+function nextDue(r){const a=+r.start.slice(8,10);for(let k=0;k<700;k++){const d=addM(r.start,r.iv*k,a);if(!r.last||d>r.last)return d}return ''}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),3200)}
+
+/* ---------- Standardwerte ---------- */
+function defCfg(){return{stichtag:today(),konten:[],pausch:0.30,regeln:[],fahrzeuge:[],
+ kats:[...['Gehalt','Nebeneinkommen','Taschengeld','Provision','Bonus Reward','Geschenke','Dividenden'].map(n=>({n,typ:'ein',a:true})),{n:'Rückerstattung',typ:'rue',a:true},{n:'Übertrag',typ:'int',a:true},{n:'Ausgleich',typ:'int',a:true},...['Fixkosten','Spaßkosten','Andere','Investieren'].map(n=>({n,typ:'aus',a:true}))],
+ zusatz:['Lebensmittel','Auto','Fahrtkosten','Abos','Versicherungen','Bildung','Arznei','Steuern','Spenden','Kontoführungsgebühren'].map(n=>({n,a:true})),
+ steuerKats:['Studium/Bildung','Fahrtkosten','Arbeitsmittel','Spenden','Versicherungen','Krankheitskosten','Sonstiges'].map(n=>({n,a:true}))}}
+const TYP_LABEL={ein:'Einnahme',aus:'Ausgabe',rue:'Rückerstattung',int:'Intern'};
+
+/* ---------- Zustand ---------- */
+const S={cfg:null,months:new Map(),sprit:new Map(),steuer:new Map(),asc:[],all:[],byId:new Map(),
+ got:{c:false,m:false},fresh:{c:false,m:false},view:'eintragen',
+ bf:{from:'',to:'',q:'',konto:'',cat:'',st:false,lim:150},
+ av:{mode:'kat',range:'month',y:new Date().getFullYear(),m:new Date().getMonth(),yy:new Date().getFullYear(),grp:'all'},
+ sy:new Date().getFullYear(),sv:{id:'',year:'all',arch:false,tab:'ueb',mode:'ges',art:''},kArch:false,booted:false};
+let db=null;
+const dirty={m:new Map(),c:0,s:new Map(),t:new Map()};
+let chain=Promise.resolve();
+const enqueue=fn=>{chain=chain.then(fn).catch(e=>toast('Speichern fehlgeschlagen: '+((e&&(e.message||e.code))||e)));return chain};
+function mark(map,key){map.set(key,(map.get(key)||0)+1)}
+function unmark(map,key){const n=(map.get(key)||1)-1;if(n<=0)map.delete(key);else map.set(key,n)}
+const CFG=()=>S.cfg||(S.cfg=defCfg());
+function saveMonth(key){mark(dirty.m,key);enqueue(()=>db.doc('monate/'+key).set({e:S.months.get(key)||[]}).finally(()=>unmark(dirty.m,key)))}
+function saveCfg(){dirty.c++;enqueue(()=>db.doc('config/main').set(clone(CFG())).finally(()=>{dirty.c--}))}
+function saveSprit(id){mark(dirty.s,id);enqueue(()=>db.doc('sprit/'+id).set({f:S.sprit.get(id)||[]}).finally(()=>unmark(dirty.s,id)))}
+function saveSteuer(y){mark(dirty.t,y);enqueue(()=>db.doc('steuer/'+y).set(S.steuer.get(y)||{fahrten:[],kosten:[]}).finally(()=>unmark(dirty.t,y)))}
+
+/* ---------- Abgeleitete Daten ---------- */
+function rebuild(){
+  const all=[];S.months.forEach(a=>a.forEach(e=>all.push(e)));
+  all.sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+  S.asc=all;S.all=[...all].reverse();S.byId=new Map(all.map(e=>[e.i,e]));
+  const fr=new Map();
+  for(const e of all){for(const n of [e.v,e.n]){if(n)fr.set(n,(fr.get(n)||0)+1)}}
+  S.names=[...fr.entries()].sort((a,b)=>b[1]-a[1]).slice(0,400).map(x=>x[0]);
+  const lb=new Map();for(const e of all){lb.set(lc(isKonto(e.n)?e.v:e.n),e)}S.lastBy=lb;
+}
+const konten=()=>CFG().konten;
+const kMap=()=>{const m=new Map();konten().forEach(k=>m.set(lc(k.n),k));return m};
+const isKonto=n=>kMap().has(lc(n));
+const katOf=n=>CFG().kats.find(k=>k.n===n);
+const typOf=e=>{const k=katOf(e.k);return k?k.typ:(e.k?'aus':'none')};
+function eff(e){if(typOf(e)!=='aus')return e.k||'Ohne Kategorie';const z=e.z||[];if(z.length){const order=CFG().zusatz.map(x=>x.n);let best=z[0],bi=1e9;for(const x of z){const i=order.indexOf(x);if(i>=0&&i<bi){bi=i;best=x}}return best}return e.k}
+function balances(until){
+  const st=CFG().stichtag,t=until||today(),m=kMap(),bal={};
+  konten().forEach(k=>bal[lc(k.n)]=+k.start||0);
+  for(const e of S.asc){if(e.d<=st||e.d>t)continue;const n=lc(e.n),v=lc(e.v);if(m.has(n))bal[n]+=e.b;if(m.has(v))bal[v]-=e.b}
+  return bal;
+}
+function totals(list){
+  let ein=0,aus=0,rue=0;const cats=new Map();
+  for(const e of list){const ty=typOf(e);if(ty==='int'||ty==='none')continue;const c=eff(e);const o=cats.get(c)||{sum:0,n:0,typ:ty};
+    if(ty==='ein'){ein+=e.b;o.sum+=e.b}else if(ty==='rue'){rue+=e.b;o.sum+=e.b}else{aus+=e.b;o.sum+=e.b}o.n++;cats.set(c,o)}
+  return{ein,aus:aus-rue,rue,cats};
+}
+function history(){
+  const st=CFG().stichtag,t=today(),ks=konten(),m=kMap(),cum={};
+  ks.forEach(k=>cum[lc(k.n)]=+k.start||0);
+  const groups=[...new Set(ks.map(k=>k.g||'Sonstige'))];
+  const out=[];let i=0;const asc=S.asc.filter(e=>e.d>st&&e.d<=t);
+  let [y,mo]=st.slice(0,7).split('-').map(Number);const [ey,em]=t.slice(0,7).split('-').map(Number);
+  while(y<ey||(y===ey&&mo<=em)){
+    const key=y+'-'+pad(mo);
+    while(i<asc.length&&asc[i].d.slice(0,7)<=key){const e=asc[i++],n=lc(e.n),v=lc(e.v);if(m.has(n))cum[n]+=e.b;if(m.has(v))cum[v]-=e.b}
+    const g={};groups.forEach(x=>g[x]=0);let tot=0;
+    ks.forEach(k=>{const b=cum[lc(k.n)];g[k.g||'Sonstige']+=b;tot+=b});
+    out.push({m:key,tot,g});mo++;if(mo>12){mo=1;y++}
+  }
+  return{pts:out,groups};
+}
+
+/* ---------- Formulare ---------- */
+const FC={};
+const activeKats=sel=>{const l=CFG().kats.filter(k=>k.a!==false||k.n===sel);return l};
+const activeZus=sel=>CFG().zusatz.filter(k=>k.a!==false||(sel&&sel.has(k.n)));
+function chipsK(p){
+  const sel=FC[p].k,l=activeKats(sel);let h='';
+  for(const t of ['aus','ein','rue','int']){const g=l.filter(k=>k.typ===t);if(!g.length)continue;
+    h+=`<div class="grp">${TYP_LABEL[t]}</div><div class="chips">`+g.map(k=>`<button type="button" class="chip ${k.n===sel?'on':''}" data-act="ck" data-p="${p}" data-v="${esc(k.n)}">${esc(k.n)}</button>`).join('')+'</div>'}
+  return h;
+}
+function chipsZ(p){const sel=FC[p].z;return activeZus(sel).map(k=>`<button type="button" class="chip ${sel.has(k.n)?'on':''}" data-act="cz" data-p="${p}" data-v="${esc(k.n)}">${esc(k.n)}</button>`).join('')}
+function stOpts(sel){return '<option value="">– nicht für die Steuer –</option>'+CFG().steuerKats.filter(k=>k.a!==false||k.n===sel).map(k=>`<option ${k.n===sel?'selected':''}>${esc(k.n)}</option>`).join('')}
+function entryFields(p,e){
+  FC[p]={k:e.k||'',z:new Set(e.z||[]),touched:!!e.i};
+  return `<div class="row2"><div class="field"><label for="${p}-date">Datum</label><input type="date" id="${p}-date" value="${esc(e.d||today())}"></div>
+  <div class="field"><label for="${p}-amt">Betrag in €</label><input id="${p}-amt" class="amt-in" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${e.b!=null?numIn(e.b):''}"></div></div>
+  <div class="row2"><div class="field"><label for="${p}-von">Von (Konto / Quelle)</label><input id="${p}-von" list="dl-names" autocomplete="off" value="${esc(e.v||'')}"></div>
+  <div class="field"><label for="${p}-nach">Nach (Konto / Empfänger)</label><input id="${p}-nach" list="dl-names" autocomplete="off" data-p="${p}" value="${esc(e.n||'')}"></div></div>
+  <div class="field"><label for="${p}-info">Info (optional)</label><input id="${p}-info" autocomplete="off" value="${esc(e.t||'')}"></div>
+  <details id="${p}-ad" ${e.fz||e.ak?'open':''}><summary>Auto / Scheckheft</summary>
+    <div class="row2"><div class="field"><label for="${p}-fz">Fahrzeug</label><select id="${p}-fz"><option value="">– keins –</option>${vehicles().filter(v=>v.a!==false||v.id===e.fz).map(v=>`<option value="${v.id}" ${v.id===e.fz?'selected':''}>${esc(v.n)}</option>`).join('')}</select></div>
+    <div class="field"><label for="${p}-ak">Art</label><select id="${p}-ak"><option value="">– keine –</option>${[...AK,...(e.ak==='Sprit'?['Sprit']:[])].map(a=>`<option ${a===e.ak?'selected':''}>${esc(a)}</option>`).join('')}</select></div></div>
+    <div class="field"><label for="${p}-km">Kilometerstand (optional)</label><input id="${p}-km" inputmode="numeric" autocomplete="off" value="${e.km!=null?e.km:''}"></div></details>
+  <div class="field"><label>Kategorie</label><div id="${p}-kc">${chipsK(p)}</div></div>
+  <div class="field"><label>Zusatz (optional, mehrere möglich)</label><div class="chips" id="${p}-zc">${chipsZ(p)}</div></div>
+  <div class="row2"><div class="field"><label for="${p}-st">Für die Steuererklärung</label><select id="${p}-st" data-act-change="stsel" data-p="${p}">${stOpts(e.st||'')}</select></div>
+  <div class="field"><label for="${p}-bl">Beleg / Hinweis</label><input id="${p}-bl" autocomplete="off" placeholder="z. B. Rechnung im Ordner" value="${esc(e.bl||'')}"></div></div>`;
+}
+function readEntry(p,id){
+  const d=$('#'+p+'-date').value,b=parseNum($('#'+p+'-amt').value),v=$('#'+p+'-von').value.trim(),n=$('#'+p+'-nach').value.trim();
+  if(!d){toast('Bitte ein Datum angeben');return null}
+  if(isNaN(b)){toast('Bitte einen Betrag angeben');return null}
+  if(!v||!n){toast('Bitte „Von“ und „Nach“ ausfüllen');return null}
+  const e={i:id||uid('e'),d,v,n,b:Math.round(b*100)/100,t:$('#'+p+'-info').value.trim(),k:FC[p].k};
+  if(FC[p].z.size)e.z=[...FC[p].z];
+  let fz=$('#'+p+'-fz').value;const ak=$('#'+p+'-ak').value,km=parseNum($('#'+p+'-km').value);
+  if(ak&&!fz){const dv=vehicles().find(x=>x.a!==false);if(dv)fz=dv.id;else toast('Tipp: Lege im Tab Auto zuerst ein Fahrzeug an')}
+  if(fz){e.fz=fz;const zn=(vehicles().find(x=>x.id===fz)||{}).typ||'Auto';if(CFG().zusatz.some(x=>x.n===zn)&&!(e.z||[]).includes(zn))e.z=[...(e.z||[]),zn]}
+  if(ak)e.ak=ak;if(!isNaN(km))e.km=Math.round(km);
+  const st=$('#'+p+'-st').value;if(st){e.st=st;const bl=$('#'+p+'-bl').value.trim();if(bl)e.bl=bl}
+  return e;
+}
+function fillFromKnown(p){
+  const f=FC[p];if(!f||f.touched)return;
+  const nach=$('#'+p+'-nach').value.trim();if(!nach)return;
+  const last=S.lastBy.get(lc(isKonto(nach)?$('#'+p+'-von').value:nach));if(!last)return;
+  f.k=last.k;f.z=new Set(last.z||[]);
+  $('#'+p+'-kc').innerHTML=chipsK(p);$('#'+p+'-zc').innerHTML=chipsZ(p);
+  if(last.st&&!$('#'+p+'-st').value)$('#'+p+'-st').value=last.st;
+  if(last.fz&&!$('#'+p+'-fz').value){$('#'+p+'-fz').value=last.fz;if(last.ak&&last.ak!=='Sprit')$('#'+p+'-ak').value=last.ak}
+}
+
+/* ---------- Buchungen schreiben ---------- */
+function putEntry(e){const key=e.d.slice(0,7);const a=(S.months.get(key)||[]).filter(x=>x.i!==e.i);a.push(e);a.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:0);S.months.set(key,a);saveMonth(key)}
+function addEntry(e){putEntry(e);rebuild();refresh()}
+function updateEntry(e){const old=S.byId.get(e.i);if(old&&old.d.slice(0,7)!==e.d.slice(0,7)){const ok=old.d.slice(0,7);S.months.set(ok,(S.months.get(ok)||[]).filter(x=>x.i!==e.i));saveMonth(ok)}putEntry(e);rebuild();refresh()}
+function removeEntry(id){const old=S.byId.get(id);if(!old)return;const k=old.d.slice(0,7);S.months.set(k,(S.months.get(k)||[]).filter(x=>x.i!==id));saveMonth(k);rebuild();refresh()}
+
+/* ---------- Regelmäßige Buchungen ---------- */
+function ruleEntry(r,d){const out=r.typ==='out';const e={i:'r_'+r.id+'_'+d,d,v:out?r.konto:r.n,n:out?r.n:r.konto,b:r.b,t:r.t||'',k:r.k};if(r.z&&r.z.length)e.z=r.z;if(r.st)e.st=r.st;return e}
+function autoBook(){
+  const cfg=CFG();let n=0,changed=false;const t=today();
+  for(const r of cfg.regeln){
+    if(r.a===false||r.auto===false)continue;
+    const ds=dues(r,t);if(!ds.length)continue;
+    for(const d of ds){if(!S.byId.has('r_'+r.id+'_'+d)){putEntry(ruleEntry(r,d));n++}}
+    r.last=ds[ds.length-1];changed=true;
+  }
+  if(changed){saveCfg();rebuild();refresh()}
+  if(n)toast(n+(n===1?' fällige Buchung':' fällige Buchungen')+' automatisch gebucht');
+}
+const manualDue=()=>CFG().regeln.filter(r=>r.a!==false&&r.auto===false&&dues(r,today()).length);
+
+/* ---------- Rendering ---------- */
+const VIEWS=[['eintragen','Eintragen'],['buchungen','Buchungen'],['auswertung','Auswertung'],['konten','Konten'],['regelmaessig','Regelmäßig'],['steuer','Steuer'],['auto','Auto']];
+const ALLV=VIEWS.concat([['einstellungen','Einstellungen']]);
+function go(v){if(location.hash!=='#'+v)location.hash=v;else route()}
+function route(){let v=(location.hash||'').slice(1);if(v==='sprit')v='auto';S.view=ALLV.some(x=>x[0]===v)?v:'eintragen';render()}
+function renderTabs(){$('#tabs').innerHTML=VIEWS.map(([id,l])=>`<button class="${S.view===id?'on':''}" data-act="go" data-v="${id}">${l}</button>`).join('')}
+function render(){
+  renderTabs();
+  const m=$('#main');
+  if(!S.booted){m.innerHTML='<div class="empty">Lade Daten …</div>';return}
+  m.innerHTML=V[S.view]();
+  if(AFTER[S.view])AFTER[S.view]();
+  window.scrollTo(0,0);
+}
+function refresh(){
+  const act=document.activeElement;
+  const typing=act&&act.closest&&act.closest('#main')&&/^(INPUT|SELECT|TEXTAREA)$/.test(act.tagName);
+  updateHeader();updateLists();
+  if(!S.booted)return;
+  if(S.view==='eintragen'){fillEintragen();return}
+  if(S.view==='buchungen'){fillBuchungen();return}
+  if(typing&&!$('#modal.open')){S.pending=true;return}
+  S.pending=false;
+  const y=window.scrollY;$('#main').innerHTML=V[S.view]();if(AFTER[S.view])AFTER[S.view]();window.scrollTo(0,y);
+}
+function updateHeader(){
+  if(!S.cfg&&!S.asc.length){return}
+  const bal=balances();let tot=0;konten().forEach(k=>{if(k.a!==false)tot+=bal[lc(k.n)]});
+  $('#hsum').innerHTML='Vermögen aktive Konten <b>'+eur(tot)+'</b>';
+}
+function updateLists(){
+  $('#dl-names').innerHTML=[...konten().filter(k=>k.a!==false).map(k=>k.n),...(S.names||[])].filter((v,i,a)=>a.indexOf(v)===i).map(n=>`<option value="${esc(n)}">`).join('');
+  $('#dl-groups').innerHTML=[...new Set(konten().map(k=>k.g||'Sonstige'))].map(n=>`<option value="${esc(n)}">`).join('');
+}
+function amtCell(e){const t=typOf(e);if(t==='ein'||t==='rue')return `<span class="amt pos">${sgn(e.b,true)}</span>`;if(t==='aus')return `<span class="amt neg">${sgn(-e.b)}</span>`;return `<span class="amt">${sgn(e.b)}</span>`}
+function rowHTML(e){
+  const tags=(e.k?`<span class="tag">${esc(e.k)}</span>`:'')+(e.z||[]).map(z=>`<span class="tag">${esc(z)}</span>`).join('')+(e.ak&&e.ak!=='Sprit'?`<span class="tag">${esc(e.ak)}</span>`:'')+(e.st?`<span class="tag st">Steuer</span>`:'');
+  return `<button class="row" data-act="edit" data-id="${esc(e.i)}"><span class="d">${pds(e.d)}</span><span class="mid"><b>${esc(e.n)}</b><small>von ${esc(e.v)}${e.t?' · '+esc(e.t):''}</small><span style="margin-top:3px">${tags}</span></span>${amtCell(e)}</button>`;
+}
+const V={},AFTER={};
+
+/* --- Eintragen --- */
+V.eintragen=()=>{
+  const last=(()=>{try{return localStorage.getItem('hb-von')}catch(e){return ''}})();
+  const first=konten().find(k=>k.a!==false);
+  const e={d:today(),v:last||(first?first.n:''),k:'Andere'};
+  return `<div id="banner"></div>
+  <form class="card" id="ef" autocomplete="off">${entryFields('f',e)}
+    <div class="btns"><button class="btn pri" type="submit" style="flex:1">Buchen</button></div></form>
+  <div class="card" id="tplbox" hidden><h3>Häufig in den letzten Monaten</h3><div class="chips" id="tpls"></div></div>
+  <div class="card flat"><div style="padding:12px 14px"><h3>Zuletzt gebucht</h3></div><div class="list" id="recent"></div></div>`;
+};
+AFTER.eintragen=()=>{fillEintragen();setTimeout(()=>{const a=$('#f-amt');if(a&&innerWidth>860)a.focus()},0)};
+function fillEintragen(){
+  if(!$('#f-amt'))return;
+  $('#f-kc').innerHTML=chipsK('f');$('#f-zc').innerHTML=chipsZ('f');
+  const r=$('#recent');r.innerHTML=S.all.slice(0,12).map(rowHTML).join('')||'<div class="empty">Noch keine Buchungen.</div>';
+  const cut=isoOf(new Date(Date.now()-120*864e5)),m=new Map();
+  for(const e of S.all){if(e.d<cut)break;if(typOf(e)==='int')continue;const k=e.v+'|'+e.n+'|'+e.k+'|'+(e.z||[]).join(',');const o=m.get(k)||{e,c:0};o.c++;m.set(k,o)}
+  S.tpls=[...m.values()].filter(o=>o.c>1).sort((a,b)=>b.c-a.c).slice(0,10).map(o=>o.e);
+  $('#tplbox').hidden=!S.tpls.length;
+  $('#tpls').innerHTML=S.tpls.map((e,i)=>`<button type="button" class="chip tpl" data-act="tpl" data-i="${i}">${esc(e.n)}<small>${esc(e.v)} · ${esc(e.k)}</small></button>`).join('');
+  const due=manualDue();
+  $('#banner').innerHTML=due.length?`<div class="banner"><b>${due.length===1?'1 Zahlung ist fällig':due.length+' Zahlungen sind fällig'}</b>`+due.map(r=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><span>${esc(r.n)} · ${eur(r.b)} · ${pd(dues(r,today())[0])}</span><span class="btns"><button class="btn sm pri" data-act="dueBook" data-id="${r.id}">Buchen</button><button class="btn sm" data-act="dueSkip" data-id="${r.id}">Überspringen</button></span></div>`).join('')+'</div>':'';
+}
+
+/* --- Buchungen --- */
+V.buchungen=()=>{
+  const f=S.bf;const cats=[...new Set([...CFG().kats.map(k=>k.n),...CFG().zusatz.map(k=>k.n)])];
+  return `<div class="card"><div class="row2"><div class="field"><label for="b-q">Suche</label><input id="b-q" type="search" placeholder="Empfänger oder Info" value="${esc(f.q)}"></div>
+  <div class="field"><label for="b-konto">Konto</label><select id="b-konto"><option value="">alle</option>${konten().map(k=>`<option ${k.n===f.konto?'selected':''}>${esc(k.n)}</option>`).join('')}</select></div></div>
+  <div class="row2"><div class="field"><label for="b-cat">Kategorie</label><select id="b-cat"><option value="">alle</option>${cats.map(c=>`<option ${c===f.cat?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+  <div class="field"><label>&nbsp;</label><label style="display:flex;gap:8px;align-items:center;min-height:42px;font-size:14px;color:var(--ink)"><input type="checkbox" id="b-st" ${f.st?'checked':''}> nur Steuer-relevante</label></div></div>
+  <div class="row2"><div class="field"><label for="b-from">Von Datum</label><input type="date" id="b-from" value="${esc(f.from)}"></div><div class="field"><label for="b-to">Bis Datum</label><input type="date" id="b-to" value="${esc(f.to)}"></div></div>
+  <div class="bar-nav"><span class="small muted" id="b-info"></span><button class="btn sm" data-act="bReset">Filter zurücksetzen</button></div></div>
+  <div class="card flat"><div class="list" id="blist"></div></div>`;
+};
+AFTER.buchungen=fillBuchungen;
+function filtered(){
+  const f=S.bf,q=lc(f.q);
+  return S.all.filter(e=>{
+    if(f.from&&e.d<f.from)return false;if(f.to&&e.d>f.to)return false;
+    if(f.konto&&lc(e.v)!==lc(f.konto)&&lc(e.n)!==lc(f.konto))return false;
+    if(f.cat&&!(eff(e)===f.cat||e.k===f.cat||(e.z||[]).includes(f.cat)))return false;
+    if(f.st&&!e.st)return false;
+    if(q&&!(lc(e.n).includes(q)||lc(e.v).includes(q)||lc(e.t).includes(q)))return false;
+    return true});
+}
+function fillBuchungen(){
+  const l=$('#blist');if(!l)return;
+  const res=filtered(),shown=res.slice(0,S.bf.lim);
+  let sum=0;res.forEach(e=>{const t=typOf(e);if(t==='ein'||t==='rue')sum+=e.b;else if(t==='aus')sum-=e.b});
+  $('#b-info').textContent=res.length+' Buchungen · Saldo Ein/Aus '+sgn(sum,true);
+  l.innerHTML=shown.map(rowHTML).join('')+(res.length>shown.length?`<button class="kv" data-act="bMore" style="color:var(--accent);font-weight:600">Weitere anzeigen (${res.length-shown.length})</button>`:'')||'<div class="empty">Keine Buchungen für diese Filter.</div>';
+}
+
+/* --- Auswertung --- */
+function rangeOf(){
+  const a=S.av;
+  if(a.range==='month'){const f=a.y+'-'+pad(a.m+1)+'-01',t=a.y+'-'+pad(a.m+1)+'-31';return{from:f,to:t,label:MONL[a.m]+' '+a.y}}
+  if(a.range==='year')return{from:a.y+'-01-01',to:a.y+'-12-31',label:'Jahr '+a.y};
+  return{from:'0000',to:'9999',label:'Gesamter Zeitraum'};
+}
+function catTable(cats,typ,total){
+  const rows=[...cats.entries()].filter(([,o])=>typ==='ein'?o.typ==='ein':o.typ!=='ein').sort((a,b)=>Math.abs(b[1].sum)-Math.abs(a[1].sum));
+  if(!rows.length)return '<div class="empty">Keine Buchungen.</div>';
+  const max=Math.max(...rows.map(r=>Math.abs(r[1].sum)),1);
+  return rows.map(([c,o])=>`<button class="kv" data-act="aCat" data-c="${esc(c)}"><span style="min-width:0"><b>${esc(c)}</b> <span class="muted small">${o.n}×</span><span class="bar" style="display:block"><i style="display:block;width:${Math.abs(o.sum)/max*100}%;${o.typ==='rue'?'background:var(--pos)':''}"></i></span></span><span class="num ${o.typ==='aus'?'':'pos'}" style="font-weight:600">${nf.format(o.sum)} €${total?` <span class="muted small">${Math.round(o.sum/total*100)}%</span>`:''}</span></button>`).join('');
+}
+V.auswertung=()=>{
+  const a=S.av;
+  let h=`<div class="seg" style="align-self:flex-start"><button class="${a.mode==='kat'?'on':''}" data-act="aMode" data-v="kat">Kategorien</button><button class="${a.mode==='ent'?'on':''}" data-act="aMode" data-v="ent">Entwicklung</button></div>`;
+  if(a.mode==='kat'){
+    const r=rangeOf();const list=S.asc.filter(e=>e.d>=r.from&&e.d<=r.to);const t=totals(list);
+    const noCat=list.filter(e=>typOf(e)==='none').length;const ausg=[...t.cats.values()].filter(o=>o.typ!=='ein').reduce((s,o)=>s+o.sum,0);
+    h+=`<div class="card"><div class="bar-nav"><div class="seg"><button class="${a.range==='month'?'on':''}" data-act="aRange" data-v="month">Monat</button><button class="${a.range==='year'?'on':''}" data-act="aRange" data-v="year">Jahr</button><button class="${a.range==='all'?'on':''}" data-act="aRange" data-v="all">Alles</button></div>
+    ${a.range!=='all'?`<div class="btns"><button class="btn sm" data-act="aPrev" aria-label="zurück">‹</button><b style="align-self:center;min-width:110px;text-align:center">${esc(r.label)}</b><button class="btn sm" data-act="aNext" aria-label="weiter">›</button></div>`:`<b>${esc(r.label)}</b>`}</div>
+    <div class="grid"><div><h3>Einnahmen</h3><div class="big pos">${eur(t.ein)}</div></div><div><h3>Ausgaben</h3><div class="big neg">${eur(t.aus)}</div></div><div><h3>Übrig</h3><div class="big">${sgn(t.ein-t.aus)}</div></div></div></div>
+    <div class="card flat"><div style="padding:12px 14px"><h3>Wofür das Geld ging</h3></div><div class="list">${catTable(t.cats,'aus',ausg)}</div></div>
+    <div class="card flat"><div style="padding:12px 14px"><h3>Einnahmen</h3></div><div class="list">${catTable(t.cats,'ein',t.ein)}</div></div>
+    ${noCat?`<div class="small muted">${noCat} Buchung(en) im Zeitraum ohne Kategorie, sie zählen nicht mit.</div>`:''}
+    <div class="btns"><button class="btn" data-act="pdfAus">PDF speichern</button><button class="btn" data-act="csvAll">Alle Buchungen als CSV</button></div>`;
+  }else{
+    h+=entwicklung();
+  }
+  return h;
+};
+function chartSVG(series,labels){
+  const W=640,H=230,L=52,R=14,T=12,B=26;const all=series.flatMap(s=>s.v);let mn=Math.min(0,...all),mx=Math.max(...all);if(mx===mn)mx=mn+1;
+  const step=(()=>{const r=(mx-mn)/4;const p=Math.pow(10,Math.floor(Math.log10(r)));const f=r/p;return(f<=1?1:f<=2?2:f<=5?5:10)*p})();
+  const lo=Math.floor(mn/step)*step,hi=Math.ceil(mx/step)*step;
+  const X=i=>L+(W-L-R)*(labels.length<2?0:i/(labels.length-1)),Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
+  let g='';for(let v=lo;v<=hi+1e-9;v+=step)g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${Y(v)+3}" text-anchor="end">${nf0.format(v)}</text>`;
+  labels.forEach((m,i)=>{if(m.endsWith('-01')||i===0){g+=`<text x="${X(i)}" y="${H-8}" text-anchor="middle">${m.slice(0,4)}</text>`}});
+  const lines=series.map(s=>{const d=s.v.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');const li=s.v.length-1;
+    return `<path d="${d}" fill="none" stroke="${s.c}" stroke-width="${s.w||1.6}" stroke-linejoin="round"/><circle cx="${X(li)}" cy="${Y(s.v[li])}" r="3.2" fill="${s.c}"/>`}).join('');
+  return `<div class="tbl"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:480px;height:auto" role="img" aria-label="Vermögensverlauf">${g}${lines}</svg></div>`;
+}
+function yearRows(){
+  const ys=new Map();
+  for(const e of S.asc){const y=e.d.slice(0,4);if(!ys.has(y))ys.set(y,[]);ys.get(y).push(e)}
+  return[...ys.entries()].map(([y,l])=>({y,t:totals(l),list:l}));
+}
+function entwicklung(){
+  const hist=history(),cols=['var(--c1)','var(--c2)','var(--c3)','var(--c4)'];
+  const gsel=S.av.grp;const gs=hist.groups.filter(g=>g!=='Sonstige'||hist.pts.some(p=>Math.abs(p.g[g])>1));
+  const series=[{n:'Gesamt',c:'var(--ink)',w:2.2,v:hist.pts.map(p=>p.tot)},...gs.slice(0,4).map((g,i)=>({n:g,c:cols[i],v:hist.pts.map(p=>p.g[g])}))];
+  const yr=yearRows().reverse(),sel=S.av.yy;
+  const endTot=y=>{const p=[...hist.pts].reverse().find(p=>p.m.startsWith(y));return p?p.tot:null};
+  let h=`<div class="card"><h2>Vermögen im Zeitverlauf</h2>${chartSVG(series,hist.pts.map(p=>p.m))}<div class="legend">${series.map(s=>`<span><i style="background:${s.c}"></i>${esc(s.n)}</span>`).join('')}</div><div class="small muted">Monatsende, alle Konten inklusive archivierter. Start am ${pd(CFG().stichtag)}.</div></div>`;
+  h+=`<div class="card flat"><div style="padding:12px 14px"><h3>Jahresübersicht</h3></div><div class="tbl"><table><thead><tr><th>Jahr</th><th>Einnahmen</th><th>Ausgaben</th><th>Übrig</th><th>Quote</th><th>Vermögen Ende</th></tr></thead><tbody>${yr.map(r=>{const o=r.t.ein-r.t.aus,q=r.t.ein>0?Math.round(o/r.t.ein*100)+' %':'–',v=endTot(r.y);return `<tr class="click" data-act="aYear" data-y="${r.y}" ${+r.y===sel?'style="background:var(--soft)"':''}><td>${r.y}</td><td>${nf0.format(r.t.ein)}</td><td>${nf0.format(r.t.aus)}</td><td class="${o<0?'neg':'pos'}">${nf0.format(o)}</td><td>${q}</td><td>${v==null?'–':nf0.format(v)}</td></tr>`}).join('')}</tbody></table></div></div>`;
+  const ml=S.asc.filter(e=>e.d.startsWith(String(sel)));
+  const rows=[];for(let m=1;m<=12;m++){const l=ml.filter(e=>+e.d.slice(5,7)===m);if(!l.length)continue;const t=totals(l);rows.push(`<tr><td>${MON[m-1]}</td><td>${nf0.format(t.ein)}</td><td>${nf0.format(t.aus)}</td><td class="${t.ein-t.aus<0?'neg':'pos'}">${nf0.format(t.ein-t.aus)}</td></tr>`)}
+  h+=`<div class="card flat"><div style="padding:12px 14px"><h3>Monate ${sel}</h3></div><div class="tbl"><table><thead><tr><th>Monat</th><th>Einnahmen</th><th>Ausgaben</th><th>Übrig</th></tr></thead><tbody>${rows.join('')||'<tr><td colspan="4" class="muted">Keine Daten</td></tr>'}</tbody></table></div></div>`;
+  const yrs=yr.map(r=>r.y).slice(0,8).reverse();const cm=new Map();
+  for(const r of yr){if(!yrs.includes(r.y))continue;r.t.cats.forEach((o,c)=>{if(o.typ==='aus'){const x=cm.get(c)||{};x[r.y]=(x[r.y]||0)+o.sum;cm.set(c,x)}})}
+  const crow=[...cm.entries()].sort((a,b)=>Object.values(b[1]).reduce((s,x)=>s+x,0)-Object.values(a[1]).reduce((s,x)=>s+x,0));
+  h+=`<div class="card flat"><div style="padding:12px 14px"><h3>Ausgaben pro Kategorie und Jahr</h3></div><div class="tbl"><table><thead><tr><th>Kategorie</th>${yrs.map(y=>`<th>${y}</th>`).join('')}</tr></thead><tbody>${crow.map(([c,x])=>`<tr><td>${esc(c)}</td>${yrs.map(y=>`<td>${x[y]?nf0.format(x[y]):'–'}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>
+  <div class="btns"><button class="btn" data-act="pdfJahr">Jahresübersicht als PDF</button></div>`;
+  return h;
+}
+
+/* --- Konten --- */
+function kontoRow(k,bal,arch){
+  const b=bal[lc(k.n)];
+  return `<button class="kv" data-act="kEdit" data-n="${esc(k.n)}"><span><b>${esc(k.n)}</b>${k.g?` <span class="muted small">${esc(k.g)}</span>`:''}</span><span class="num" style="font-weight:600;${b<0&&!arch?'color:var(--neg)':''}">${eur(b)}</span></button>`;
+}
+V.konten=()=>{
+  const bal=balances(),act=konten().filter(k=>k.a!==false),arch=konten().filter(k=>k.a===false);
+  const groups=[...new Set(act.map(k=>k.g||'Sonstige'))];let tot=0;act.forEach(k=>tot+=bal[lc(k.n)]);
+  const archSum=arch.reduce((s,k)=>s+bal[lc(k.n)],0);
+  let h=`<div class="card"><h3>Gesamt (aktive Konten)</h3><div class="big">${eur(tot)}</div><div class="small muted">Stand heute. Antippen eines Kontos: Kontostand abgleichen, bearbeiten oder archivieren.</div></div>`;
+  for(const g of groups){const l=act.filter(k=>(k.g||'Sonstige')===g);const s=l.reduce((a,k)=>a+bal[lc(k.n)],0);
+    h+=`<div class="card flat"><div style="padding:12px 14px;display:flex;justify-content:space-between"><h3>${esc(g)}</h3><span class="num small muted">${eur(s)}</span></div><div class="list">${l.map(k=>kontoRow(k,bal)).join('')}</div></div>`}
+  h+=`<div class="btns"><button class="btn pri" data-act="kNew">Neues Konto</button></div>`;
+  h+=`<div class="card flat"><button class="kv" data-act="kArch"><span><b>Archiv</b> <span class="muted small">${arch.length} Konten, Buchungen bleiben erhalten</span></span><span>${S.kArch?'−':'+'}</span></button>${S.kArch?`<div class="list">${arch.map(k=>kontoRow(k,bal,true)).join('')||'<div class="empty">Nichts archiviert.</div>'}</div>`:''}</div>`;
+  if(arch.some(k=>Math.abs(bal[lc(k.n)])>0.005)&&S.kArch)h+=`<div class="small muted">Archivierte Konten mit Restsaldo zählen nicht zum Gesamtvermögen (Summe ${eur(archSum)}).</div>`;
+  return h;
+};
+function ausgleichEntry(konto,ist,soll,d){
+  const diff=Math.round((ist-soll)*100)/100;if(!diff)return null;
+  const e={i:uid('e'),d,t:'Ausgleich: Kontostand '+numIn(ist)+' € statt '+numIn(soll)+' €',k:'Ausgleich'};
+  if(diff>0){e.v='Ausgleich';e.n=konto;e.b=diff}else{e.v=konto;e.n='Ausgleich';e.b=-diff}
+  return e;
+}
+
+/* --- Regelmäßig --- */
+const AK=['Inspektion','HU/TÜV','Reparatur','Reifen','Versicherung','Kfz-Steuer','Zubehör/Pflege','Parken/Maut','Sonstiges'];
+const SERVICE=['Inspektion','HU/TÜV','Reparatur','Reifen'];
+const IV={1:'monatlich',3:'vierteljährlich',6:'halbjährlich',12:'jährlich'};
+function ruleRow(r){
+  const n=nextDue(r);const paused=r.a===false;
+  return `<button class="kv" data-act="rEdit" data-id="${r.id}"><span style="min-width:0"><b>${esc(r.n)}</b> <span class="muted small">${esc(r.t||'')}</span><br><span class="muted small">${IV[r.iv]||r.iv+' Mon.'} · ${paused?'pausiert':'nächste '+pd(n)} · ${esc(r.konto)}${r.auto===false?' · manuell':''}</span></span><span class="num ${r.typ==='in'?'pos':''}" style="font-weight:600">${r.typ==='in'?'+':''}${eur(r.b)}</span></button>`;
+}
+V.regelmaessig=()=>{
+  const rs=CFG().regeln,act=rs.filter(r=>r.a!==false),pa=rs.filter(r=>r.a===false);
+  const out=act.filter(r=>r.typ==='out').sort((a,b)=>nextDue(a)<nextDue(b)?-1:1),inn=act.filter(r=>r.typ==='in');
+  const mo=x=>x.reduce((s,r)=>s+r.b*12/r.iv/12,0);
+  return `<div class="card"><div class="grid"><div><h3>Fixkosten pro Monat</h3><div class="big neg">${eur(mo(out))}</div></div><div><h3>Feste Einnahmen pro Monat</h3><div class="big pos">${eur(mo(inn))}</div></div></div>
+  <div class="small muted">Fällige Buchungen werden beim Öffnen der App automatisch eingetragen. Zahlungen mit „manuell“ erscheinen als Hinweis auf dem Eintragen-Tab.</div></div>
+  <div class="card flat"><div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><h3>Fixkosten und Abos</h3><button class="btn sm" data-act="rNew" data-t="out">Neu</button></div><div class="list">${out.map(ruleRow).join('')||'<div class="empty">Keine Fixkosten.</div>'}</div></div>
+  <div class="card flat"><div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><h3>Regelmäßige Einnahmen</h3><button class="btn sm" data-act="rNew" data-t="in">Neu</button></div><div class="list">${inn.map(ruleRow).join('')||'<div class="empty">Keine regelmäßigen Einnahmen.</div>'}</div></div>
+  ${pa.length?`<div class="card flat"><div style="padding:12px 14px"><h3>Pausiert</h3></div><div class="list">${pa.map(ruleRow).join('')}</div></div>`:''}`;
+};
+
+/* --- Steuer --- */
+function stDoc(y){if(!S.steuer.has(y))S.steuer.set(y,{fahrten:[],kosten:[]});return S.steuer.get(y)}
+function steuerData(y){
+  const ent=S.asc.filter(e=>e.st&&e.d.startsWith(y));
+  const d=S.steuer.get(y)||{fahrten:[],kosten:[]};
+  return{ent,fahrten:[...d.fahrten].sort((a,b)=>a.d<b.d?-1:1),kosten:[...d.kosten].sort((a,b)=>a.d<b.d?-1:1)};
+}
+const STMAP={Bildung:'Studium/Bildung',Spenden:'Spenden',Arznei:'Krankheitskosten',Versicherungen:'Versicherungen',Fahrtkosten:'Fahrtkosten'};
+V.steuer=()=>{
+  const y=String(S.sy),yrs=new Set([String(new Date().getFullYear())]);
+  S.asc.forEach(e=>yrs.add(e.d.slice(0,4)));S.steuer.forEach((_,k)=>yrs.add(k));
+  const d=steuerData(y),pa=CFG().pausch;
+  const byK=new Map();d.ent.forEach(e=>byK.set(e.st,(byK.get(e.st)||0)+e.b));d.kosten.forEach(k=>byK.set('Altliste / manuell',(byK.get('Altliste / manuell')||0)+k.b));
+  const km=d.fahrten.reduce((s,f)=>s+(+f.km||0),0);const sumK=[...byK.values()].reduce((a,b)=>a+b,0);
+  const cand=S.asc.filter(e=>!e.st&&e.d.startsWith(y)&&typOf(e)==='aus'&&(e.z||[]).some(z=>STMAP[z])&&!(e.z||[]).includes('Fahrtkosten'));
+  return `<div class="card"><div class="bar-nav"><h2>Steuerjahr</h2><select id="sy" style="width:auto">${[...yrs].sort().reverse().map(x=>`<option ${x===y?'selected':''}>${x}</option>`).join('')}</select></div>
+  <div class="grid"><div><h3>Absetzbare Kosten</h3><div class="big">${eur(sumK)}</div></div><div><h3>Fahrten</h3><div class="big">${nf0.format(km)} km</div><div class="small muted">× ${nf.format(pa)} € = ${eur(km*pa)}</div></div></div>
+  <div class="small muted">Beim Buchen unter „Für die Steuererklärung“ eine Kategorie wählen, dann landet die Buchung hier.</div></div>
+  <div class="card flat"><div style="padding:12px 14px"><h3>Nach Kategorie</h3></div><div class="list">${[...byK.entries()].map(([k,v])=>`<div class="kv"><span>${esc(k)}</span><span class="num" style="font-weight:600">${eur(v)}</span></div>`).join('')||'<div class="empty">Noch nichts markiert.</div>'}</div></div>
+  <div class="card flat"><div style="padding:12px 14px"><h3>Markierte Buchungen (${d.ent.length})</h3></div><div class="list">${d.ent.slice().reverse().map(rowHTML).join('')||'<div class="empty">Keine.</div>'}</div></div>
+  ${cand.length?`<div class="card flat"><div style="padding:12px 14px"><h3>Mögliche Kandidaten (${cand.length})</h3><div class="small muted">Gebucht mit Zusatz wie Bildung, Spenden, Arznei oder Versicherungen, aber noch nicht für die Steuer markiert.</div></div><div class="list">${cand.slice().reverse().map(e=>`<div class="row" style="grid-template-columns:48px 1fr auto auto"><span class="d">${pds(e.d)}</span><span class="mid"><b>${esc(e.n)}</b><small>${esc(e.t||'')}</small></span><span class="amt num">${eur(e.b)}</span><button class="btn sm" data-act="stMark" data-id="${esc(e.i)}">Markieren</button></div>`).join('')}</div></div>`:''}
+  <div class="card flat"><div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><h3>Fahrtenbuch (${d.fahrten.length})</h3><button class="btn sm" data-act="fNew">Neue Fahrt</button></div><div class="list">${d.fahrten.slice().reverse().map(f=>`<button class="row" data-act="fEdit" data-id="${f.i}"><span class="d">${pds(f.d)}</span><span class="mid"><b>${esc(f.o)}</b><small>${esc(f.t||'')}</small></span><span class="amt">${nf0.format(f.km)} km</span></button>`).join('')||'<div class="empty">Keine Fahrten.</div>'}</div></div>
+  <div class="card flat"><div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><h3>Weitere Kosten, manuell (${d.kosten.length})</h3><button class="btn sm" data-act="kosNew">Neu</button></div><div class="list">${d.kosten.slice().reverse().map(k=>`<button class="row" data-act="kosEdit" data-id="${k.i}"><span class="d">${pds(k.d)}</span><span class="mid"><b>${esc(k.t)}</b><small>${esc(k.m||'')}</small></span><span class="amt">${eur(k.b)}</span></button>`).join('')||'<div class="empty">Keine.</div>'}</div></div>
+  <div class="btns"><button class="btn pri" data-act="pdfSteuer">Steuer-Übersicht als PDF</button><button class="btn" data-act="pdfFahrten">Fahrtenbuch als PDF</button></div>`;
+};
+
+/* --- Sprit --- */
+const vehicles=()=>CFG().fahrzeuge;
+function curVeh(){const l=vehicles().filter(v=>v.a!==false||S.sv.arch);let v=vehicles().find(x=>x.id===S.sv.id&&(x.a!==false||S.sv.arch));if(!v)v=l[0];return v}
+function spritCalc(vid){
+  const f=[...(S.sprit.get(vid)||[])].sort((a,b)=>a.d<b.d?-1:1),out=[];
+  f.forEach((x,i)=>{const p=f[i-1],liter=x.p/x.ppl;let dk=null,days=null;
+    if(p){days=Math.round((new Date(x.d)-new Date(p.d))/864e5);if(x.km!=null&&p.km!=null&&x.km>p.km)dk=x.km-p.km}
+    out.push({...x,liter,dk,days,l100:dk?liter/dk*100:null,ekm:dk?x.p/dk:null})});
+  return out;
+}
+function vehItems(v){
+  const items=[];(S.sprit.get(v.id)||[]).forEach(f=>items.push({d:f.d,art:'Sprit',b:f.p}));
+  S.asc.forEach(e=>{if(e.fz===v.id&&e.ak!=='Sprit'&&typOf(e)==='aus')items.push({d:e.d,art:e.ak||'Sonstiges',b:e.b})});
+  return items;
+}
+const svEntries=v=>S.asc.filter(e=>e.fz===v.id&&e.ak!=='Sprit'&&typOf(e)==='aus');
+function monthsSpan(items,sel){
+  const n=new Date();
+  if(sel!=='all'){return +sel===n.getFullYear()?n.getMonth()+1:12}
+  if(!items.length)return 1;const f=items.reduce((m,i)=>i.d<m?i.d:m,items[0].d);
+  return Math.max(1,(n.getFullYear()-+f.slice(0,4))*12+n.getMonth()-(+f.slice(5,7)-1)+1);
+}
+V.auto=()=>{
+  const v=curVeh();const sv=S.sv;const archN=vehicles().filter(x=>x.a===false).length;
+  if(!v)return `<div class="card"><h2>Auto</h2><div class="muted">${vehicles().length?'Alle Fahrzeuge sind archiviert.':'Noch kein Fahrzeug angelegt.'}</div><div class="btns"><button class="btn pri" data-act="vNew">Fahrzeug anlegen</button>${archN?'<button class="btn" data-act="vArch">Archiv anzeigen</button>':''}</div></div>`;
+  const items=vehItems(v);
+  const years=[...new Set([...items.map(i=>i.d.slice(0,4)),String(new Date().getFullYear())])].sort().reverse();
+  if(sv.year!=='all'&&!years.includes(sv.year))sv.year='all';
+  let h=`<div class="card"><div class="bar-nav"><select id="sv-v" style="flex:1;min-width:140px" aria-label="Fahrzeug">${vehicles().filter(x=>x.a!==false||sv.arch).map(x=>`<option value="${x.id}" ${x.id===v.id?'selected':''}>${esc(x.n)}${x.a===false?' (Archiv)':''}</option>`).join('')}</select>
+  <select id="sv-y" style="width:auto" aria-label="Jahr"><option value="all">Alle Jahre</option>${years.map(y=>`<option ${y===sv.year?'selected':''}>${y}</option>`).join('')}</select></div>
+  <div class="seg" style="align-self:flex-start">${[['ueb','Kosten'],['scheck','Scheckheft'],['tank','Tankbuch']].map(([k,l])=>`<button class="${sv.tab===k?'on':''}" data-act="vTab" data-v="${k}">${l}</button>`).join('')}</div>
+  <div class="btns"><button class="btn sm" data-act="vNew">Neues Fahrzeug</button><button class="btn sm" data-act="vToggle" data-id="${v.id}">${v.a===false?'Wieder aktivieren':'Archivieren'}</button>${archN||sv.arch?`<button class="btn sm ghost" data-act="vArch">${sv.arch?'Archiv ausblenden':'Archiv anzeigen ('+archN+')'}</button>`:''}</div></div>`;
+  return h+(sv.tab==='scheck'?autoScheck(v):sv.tab==='tank'?autoTank(v):autoUeb(v,items));
+};
+function autoUeb(v,items){
+  const sv=S.sv,sel=sv.year,mode=sv.mode;
+  const inY=items.filter(i=>sel==='all'||i.d.startsWith(sel));
+  const order=['Sprit',...AK],tot=inY.reduce((s,i)=>s+i.b,0);
+  const sumBy=l=>{const m=new Map();l.forEach(i=>m.set(i.art,(m.get(i.art)||0)+i.b));return m};
+  const km=spritCalc(v.id).filter(r=>(sel==='all'||r.d.startsWith(sel))&&r.dk).reduce((s,r)=>s+r.dk,0);
+  const months=monthsSpan(inY,sel),nYears=sel==='all'?Math.max(1,new Set(inY.map(i=>i.d.slice(0,4))).size):1;
+  const big=mode==='ges'?['Kosten gesamt',tot]:mode==='jaehr'?['Ø pro Jahr',tot/nYears]:['Ø pro Monat',tot/months];
+  const vt=v.typ||'Auto';
+  const unassigned=S.asc.filter(e=>!e.fz&&(e.z||[]).includes(vt)&&typOf(e)==='aus'&&!(e.z||[]).includes('Fahrtkosten')&&lc(e.n)!=='tankstelle').length;
+  let h=`<div class="card"><div class="seg" style="align-self:flex-start"><button class="${mode==='ges'?'on':''}" data-act="vMode" data-v="ges">Gesamt</button><button class="${mode==='jaehr'?'on':''}" data-act="vMode" data-v="jaehr">Jährlich</button><button class="${mode==='mon'?'on':''}" data-act="vMode" data-v="mon">Monatlich</button></div>
+  <div class="grid"><div><h3>${big[0]}</h3><div class="big">${eur(big[1])}</div></div><div><h3>Pro Kilometer</h3><div class="big">${km?nf.format(tot/km)+' €':'–'}</div><div class="small muted">${km?nf0.format(km)+' km laut Tankbuch':'Kilometerstände im Tankbuch fehlen'}</div></div></div></div>`;
+  const arts=order.filter(a=>items.some(i=>i.art===a));
+  if(!items.length)return h+'<div class="card empty">Noch keine Kosten für dieses Fahrzeug. Tankvorgänge kommen aus dem Tankbuch, alles andere aus Buchungen mit Fahrzeug und Art (Feld „Auto / Scheckheft“ beim Buchen).</div>';
+  if(mode==='ges'){
+    const m=sumBy(inY),mx=Math.max(...m.values(),1),cnt=a=>inY.filter(i=>i.art===a).length;
+    h+=`<div class="card flat"><div class="list">${order.filter(a=>m.has(a)).map(a=>`<div class="kv"><span style="min-width:0"><b>${esc(a)}</b> <span class="muted small">${cnt(a)}×</span><span class="bar" style="display:block"><i style="display:block;width:${m.get(a)/mx*100}%"></i></span></span><span class="num" style="font-weight:600">${eur(m.get(a))} <span class="muted small">${tot?Math.round(m.get(a)/tot*100):0}%</span></span></div>`).join('')||'<div class="empty">Nichts im Zeitraum.</div>'}</div></div>`;
+  }else if(mode==='jaehr'){
+    const ys=[...new Set(items.map(i=>i.d.slice(0,4)))].sort().reverse().slice(0,8).reverse();
+    const by=new Map(ys.map(y=>[y,sumBy(items.filter(i=>i.d.startsWith(y)))]));
+    h+=`<div class="card flat"><div class="tbl"><table><thead><tr><th>Art</th>${ys.map(y=>`<th>${y}</th>`).join('')}</tr></thead><tbody>${arts.map(a=>`<tr><td>${esc(a)}</td>${ys.map(y=>`<td>${by.get(y).has(a)?nf0.format(by.get(y).get(a)):'–'}</td>`).join('')}</tr>`).join('')}</tbody><tfoot><tr><td>Summe</td>${ys.map(y=>`<td>${nf0.format([...by.get(y).values()].reduce((s,x)=>s+x,0))}</td>`).join('')}</tr></tfoot></table></div></div>`;
+  }else if(sel==='all'){
+    const m=sumBy(inY);
+    h+=`<div class="card flat"><div class="list">${order.filter(a=>m.has(a)).map(a=>`<div class="kv"><span><b>${esc(a)}</b></span><span class="num" style="font-weight:600">${eur(m.get(a)/months)} <span class="muted small">pro Monat</span></span></div>`).join('')}</div></div><div class="small muted">Durchschnitt über ${months} Monate seit der ersten Kostenbuchung.</div>`;
+  }else{
+    const by=[];for(let i=1;i<=12;i++)by.push(sumBy(inY.filter(x=>+x.d.slice(5,7)===i)));
+    h+=`<div class="card flat"><div class="tbl"><table><thead><tr><th>Art</th>${MON.map(x=>`<th>${x}</th>`).join('')}<th>Summe</th><th>Ø/Monat</th></tr></thead><tbody>${arts.map(a=>{const t=by.reduce((s,m)=>s+(m.get(a)||0),0);return `<tr><td>${esc(a)}</td>${by.map(m=>`<td>${m.has(a)?nf0.format(m.get(a)):'–'}</td>`).join('')}<td>${nf0.format(t)}</td><td>${nf.format(t/months)}</td></tr>`}).join('')}</tbody><tfoot><tr><td>Summe</td>${by.map(m=>`<td>${nf0.format([...m.values()].reduce((s,x)=>s+x,0))}</td>`).join('')}<td>${nf0.format(tot)}</td><td>${nf.format(tot/months)}</td></tr></tfoot></table></div></div>`;
+  }
+  if(unassigned)h+=`<div class="banner"><b>${unassigned} ältere Buchungen mit Zusatz „${esc(vt)}“ sind noch keinem Fahrzeug zugeordnet.</b><div class="small muted">Sie fehlen in dieser Übersicht. Im Scheckheft kannst du sie zuordnen.</div><div class="btns"><button class="btn sm" data-act="vTab" data-v="scheck">Zum Scheckheft</button></div></div>`;
+  return h;
+}
+function autoScheck(v){
+  const sv=S.sv,sel=sv.year,all=svEntries(v);
+  const list=all.filter(e=>(sel==='all'||e.d.startsWith(sel))&&(!sv.art||(e.ak||'Sonstiges')===sv.art)).reverse();
+  const last=a=>{const l=all.filter(e=>(e.ak||'Sonstiges')===a);return l[l.length-1]};
+  const lastBox=SERVICE.map(a=>{const e=last(a);const nx=a==='HU/TÜV'&&e?addM(e.d,24,+e.d.slice(8,10)):'';
+    return `<div class="kv"><span><b>${a==='HU/TÜV'?'Letzte HU':'Letzte '+a}</b>${nx?`<br><span class="muted small">nächste spätestens ${pd(nx)}</span>`:''}</span><span class="num">${e?pd(e.d)+(e.km?' · '+nf0.format(e.km)+' km':''):'<span class="muted">noch kein Eintrag</span>'}</span></div>`}).join('');
+  const present=[...new Set(all.map(e=>e.ak||'Sonstiges'))];
+  const vt=v.typ||'Auto';
+  const cand=S.asc.filter(e=>!e.fz&&(e.z||[]).includes(vt)&&typOf(e)==='aus'&&!(e.z||[]).includes('Fahrtkosten')&&lc(e.n)!=='tankstelle').reverse().slice(0,25);
+  const sum=list.reduce((s,e)=>s+e.b,0);
+  return `<div class="card flat"><div style="padding:12px 14px"><h3>Auf einen Blick</h3></div><div class="list">${lastBox}</div></div>
+  <div class="btns"><button class="btn pri" data-act="svNew">Neuer Eintrag</button><button class="btn" data-act="pdfSchein">Scheckheft als PDF</button></div>
+  <div class="card"><div class="chips"><button class="chip ${sv.art?'':'on'}" data-act="svArt" data-v="">Alle</button>${present.map(a=>`<button class="chip ${sv.art===a?'on':''}" data-act="svArt" data-v="${esc(a)}">${esc(a)}</button>`).join('')}</div>
+  <div class="small muted">${list.length} Einträge · ${eur(sum)}</div></div>
+  <div class="card flat"><div class="list">${list.map(e=>`<button class="row" data-act="edit" data-id="${esc(e.i)}"><span class="d">${pds(e.d)}<br>${e.d.slice(0,4)}</span><span class="mid"><b>${esc(e.ak||'Sonstiges')} · ${esc(e.n)}</b><small>${e.km?nf0.format(e.km)+' km':''}${e.km&&e.t?' · ':''}${esc(e.t||'')}</small></span><span class="amt neg">${sgn(-e.b)}</span></button>`).join('')||'<div class="empty">Noch keine Scheckheft-Einträge. Mit „Neuer Eintrag“ eine Inspektion, HU oder Reparatur festhalten.</div>'}</div></div>
+  ${cand.length?`<div class="card flat"><div style="padding:12px 14px"><h3>Ältere Buchungen zuordnen</h3><div class="small muted">Mit Zusatz „${esc(vt)}“, aber ohne Fahrzeug und Art.</div></div><div class="list">${cand.map(e=>`<div class="row" style="grid-template-columns:48px 1fr auto auto"><span class="d">${pds(e.d)}</span><span class="mid"><b>${esc(e.n)}</b><small>${esc(e.t||'')}</small></span><span class="amt num">${eur(e.b)}</span><button class="btn sm" data-act="svAssign" data-id="${esc(e.i)}">Zuordnen</button></div>`).join('')}</div></div>`:''}`;
+}
+function autoTank(v){
+  const rows=spritCalc(v.id),sel=S.sv.year,vis=rows.filter(r=>sel==='all'||r.d.startsWith(sel));
+  const sp=vis.reduce((s,r)=>s+r.p,0),li=vis.reduce((s,r)=>s+r.liter,0),wk=vis.filter(r=>r.dk),kmS=wk.reduce((s,r)=>s+r.dk,0),liW=wk.reduce((s,r)=>s+r.liter,0);
+  return `<div class="card"><div class="grid"><div><h3>Kosten</h3><div class="big">${eur(sp)}</div></div><div><h3>Verbrauch</h3><div class="big">${kmS?nf.format(liW/kmS*100):'–'} <span class="small muted">l/100 km</span></div></div><div><h3>Strecke</h3><div class="big">${nf0.format(kmS)} km</div></div><div><h3>Ø Literpreis</h3><div class="big">${li?nf.format(sp/li):'–'} €</div></div></div>
+  <div class="btns"><button class="btn pri" data-act="sNew">Tankvorgang eintragen</button><button class="btn" data-act="pdfSprit">Tankbuch als PDF</button></div></div>
+  <div class="card flat"><div class="tbl"><table><thead><tr><th>Datum</th><th>€/l</th><th>Betrag</th><th>Liter</th><th>km-Stand</th><th>gefahren</th><th>l/100</th><th>€/km</th></tr></thead><tbody>${vis.slice().reverse().map(r=>`<tr class="click" data-act="sEdit" data-d="${r.d}"><td>${pds(r.d)}${r.d.slice(2,4)}</td><td>${nf.format(r.ppl)}</td><td>${nf.format(r.p)}</td><td>${nf.format(r.liter)}</td><td>${r.km!=null?nf0.format(r.km):'–'}</td><td>${r.dk?nf0.format(r.dk):'–'}</td><td>${r.l100?nf.format(r.l100):'–'}</td><td>${r.ekm?nf.format(r.ekm):'–'}</td></tr>`).join('')||'<tr><td colspan="8" class="muted">Keine Tankvorgänge.</td></tr>'}</tbody></table></div></div>
+  <div class="small muted">Verbrauch nach der Volltank-Methode: getankte Liter geteilt durch die Kilometer seit dem letzten Tanken. Die Tankkosten erscheinen auch in der Kostenübersicht.</div>`;
+}
+
+/* --- Einstellungen --- */
+function catList(list,key,withTyp){
+  return `<div class="list">${CFG()[list].map(k=>`<div class="kv"><span>${esc(k.n)} ${withTyp?`<span class="muted small">${TYP_LABEL[k.typ]}</span>`:''}${k.a===false?' <span class="tag">archiviert</span>':''}</span><button class="btn sm" data-act="catTog" data-l="${list}" data-n="${esc(k.n)}">${k.a===false?'Aktivieren':'Archivieren'}</button></div>`).join('')}
+  <form class="kv" data-form="catAdd" data-l="${list}" style="grid-template-columns:1fr ${withTyp?'auto ':''}auto"><input name="n" placeholder="Neu hinzufügen" aria-label="Neuer Name" required>${withTyp?`<select name="typ" aria-label="Art" style="width:auto">${Object.entries(TYP_LABEL).map(([k,v])=>`<option value="${k}" ${k==='aus'?'selected':''}>${v}</option>`).join('')}</select>`:''}<button class="btn sm pri" type="submit">Hinzufügen</button></form></div>`;
+}
+V.einstellungen=()=>`${ghCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien</h3><div class="small muted">Archivierte Kategorien verschwinden aus der Auswahl, alte Buchungen behalten sie.</div></div>${catList('kats','kats',true)}</div>
+<div class="card flat"><div style="padding:12px 14px"><h3>Zusatz-Kategorien</h3></div>${catList('zusatz','zusatz',false)}</div>
+<div class="card flat"><div style="padding:12px 14px"><h3>Steuer-Kategorien</h3></div>${catList('steuerKats','st',false)}</div>
+<form class="card" data-form="pausch"><h3>Fahrtenpauschale</h3><div class="row2"><div class="field"><label for="pa">€ pro Kilometer</label><input id="pa" inputmode="decimal" value="${numIn(CFG().pausch)}"></div><div class="field"><label>&nbsp;</label><button class="btn" type="submit">Speichern</button></div></div></form>
+<div class="card"><h3>Sicherung</h3><div class="small muted">Lädt alle Daten als Datei herunter. Zum Aufbewahren oder für Excel.</div><div class="btns"><button class="btn" data-act="csvAll">Buchungen als CSV</button><button class="btn" data-act="backup">Komplette Sicherung (JSON)</button></div></div>`;
+
+/* ---------- Modale Fenster ---------- */
+function openModal(html){$('#sheet').innerHTML=html;$('#modal').classList.add('open')}
+function closeModal(){$('#modal').classList.remove('open');$('#sheet').innerHTML='';if(S.pending){S.pending=false;refresh()}}
+const btnRow=(del,extra)=>`<div class="btns"><button class="btn pri" type="submit" style="flex:1">Speichern</button><button class="btn" type="button" data-act="close">Abbrechen</button>${del?`<button class="btn dng" type="button" data-act="${del}" data-confirm="1">Löschen</button>`:''}${extra||''}</div>`;
+function fld(id,label,val,attrs){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" value="${esc(val==null?'':val)}" ${attrs||''}></div>`}
+function sel(id,label,opts,cur){return `<div class="field"><label for="${id}">${label}</label><select id="${id}">${opts.map(o=>{const [v,l]=Array.isArray(o)?o:[o,o];return `<option value="${esc(v)}" ${String(v)===String(cur)?'selected':''}>${esc(l)}</option>`}).join('')}</select></div>`}
+function modalEntry(id,over){
+  const e=Object.assign({},S.byId.get(id),over||{});if(!S.byId.get(id))return;
+  openModal(`<h2>Buchung bearbeiten</h2><form data-form="entryEdit" data-id="${esc(id)}" style="display:flex;flex-direction:column;gap:12px">${entryFields('m',e)}${btnRow('entryDel')}</form>`);
+}
+function modalRule(id,typ){
+  const r=id?CFG().regeln.find(x=>x.id===id):{typ,n:'',b:'',iv:1,start:today(),t:'',konto:(konten().find(k=>k.a!==false)||{}).n||'',k:typ==='in'?'Nebeneinkommen':'Fixkosten',z:[],auto:true};
+  const ks=CFG().kats.filter(k=>(k.typ===(r.typ==='in'?'ein':'aus'))&&(k.a!==false||k.n===r.k)).map(k=>k.n);
+  openModal(`<h2>${id?'Bearbeiten':r.typ==='in'?'Neue regelmäßige Einnahme':'Neue Fixkosten'}</h2><form data-form="ruleSave" data-id="${id||''}" data-typ="${r.typ}" style="display:flex;flex-direction:column;gap:12px">
+  ${fld('r-n','Name',r.n,'required')}
+  <div class="row2">${fld('r-b','Betrag in €',r.b===''?'':numIn(r.b),'inputmode="decimal" required')}${sel('r-iv','Intervall',Object.entries(IV).map(([k,v])=>[k,v]),r.iv)}</div>
+  <div class="row2">${fld('r-start','Erste Fälligkeit (Tag bestimmt den Fälligkeitstag)',r.start,'type="date" required')}${sel('r-konto',r.typ==='in'?'Geht auf Konto':'Wird abgebucht von',konten().filter(k=>k.a!==false||k.n===r.konto).map(k=>k.n),r.konto)}</div>
+  ${fld('r-t','Info (optional)',r.t)}
+  <div class="row2">${sel('r-k','Kategorie',ks,r.k)}${sel('r-z','Zusatz',['',...CFG().zusatz.filter(z=>z.a!==false||(r.z||[]).includes(z.n)).map(z=>z.n)],(r.z||[])[0]||'')}</div>
+  <div class="row2">${sel('r-st','Für die Steuer',['',...CFG().steuerKats.map(k=>k.n)],r.st||'')}${sel('r-auto','Buchung',[['1','automatisch'],['0','manuell bestätigen']],r.auto===false?'0':'1')}</div>
+  <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="r-act" ${r.a===false?'':'checked'}> aktiv (ausschalten = pausieren)</label>
+  ${r.last?`<div class="small muted">Zuletzt gebucht: ${pd(r.last)}</div>`:''}
+  ${btnRow(id?'ruleDel':'')}</form>`);
+}
+function modalKonto(name){
+  const k=name?konten().find(x=>x.n===name):null;const bal=k?balances()[lc(k.n)]:0;
+  if(k){
+    openModal(`<h2>${esc(k.n)}</h2><div class="small muted">Rechnerischer Kontostand</div><div class="big">${eur(bal)}</div>
+    <form data-form="abgleich" data-n="${esc(k.n)}" style="display:flex;flex-direction:column;gap:12px" class="card"><h3>Kontostand abgleichen</h3><div class="small muted">Tatsächlichen Stand eintragen. Die Differenz wird als Ausgleichsbuchung gespeichert, du musst sie nicht erklären.</div>
+    <div class="row2">${fld('ab-ist','Tatsächlicher Stand in €','','inputmode="decimal" placeholder="'+numIn(bal)+'" required')}${fld('ab-d','Datum',today(),'type="date"')}</div><div id="ab-diff" class="small muted"></div>
+    <button class="btn pri" type="submit">Ausgleich buchen</button></form>
+    <form data-form="kontoSave" data-n="${esc(k.n)}" style="display:flex;flex-direction:column;gap:12px"><h3>Konto bearbeiten</h3>
+    <div class="row2">${fld('ko-g','Gruppe',k.g||'','list="dl-groups"')}${fld('ko-s','Startsaldo am '+pd(CFG().stichtag),numIn(k.start||0),'inputmode="decimal"')}</div>
+    <div class="btns"><button class="btn" type="submit">Speichern</button><button class="btn" type="button" data-act="kTog" data-n="${esc(k.n)}">${k.a===false?'Wieder aktivieren':'Archivieren'}</button><button class="btn ghost" type="button" data-act="close">Schließen</button></div>${k.a!==false&&Math.abs(bal)>0.005?'<div class="small muted">Archivierte Konten zählen nicht mehr zum Gesamtvermögen. Der Saldo bleibt gespeichert.</div>':''}</form>`);
+  }else{
+    openModal(`<h2>Neues Konto</h2><form data-form="kontoNew" style="display:flex;flex-direction:column;gap:12px">${fld('ko-n','Name','','required')}<div class="row2">${fld('ko-g','Gruppe','Alltag','list="dl-groups"')}${fld('ko-s','Aktueller Stand in €','0','inputmode="decimal"')}</div><div class="small muted">Der Stand wird als Ausgleichsbuchung von heute angelegt.</div>${btnRow()}</form>`);
+  }
+}
+function modalFahrt(id){
+  const y=String(S.sy);const f=id?(steuerData(y).fahrten.find(x=>x.i===id)):{d:today(),km:'',o:'',t:''};if(!f)return;
+  openModal(`<h2>${id?'Fahrt bearbeiten':'Neue Fahrt'}</h2><form data-form="fahrtSave" data-id="${id||''}" style="display:flex;flex-direction:column;gap:12px"><div class="row2">${fld('fa-d','Datum',f.d,'type="date" required')}${fld('fa-km','Kilometer (Hin und zurück)',f.km,'inputmode="decimal" required')}</div>${fld('fa-o','Ziel / Ort',f.o,'required')}${fld('fa-t','Anlass',f.t)}${btnRow(id?'fahrtDel':'')}</form>`);
+}
+function modalKosten(id){
+  const y=String(S.sy);const k=id?(steuerData(y).kosten.find(x=>x.i===id)):{d:today(),b:'',t:'',m:''};if(!k)return;
+  openModal(`<h2>${id?'Kosten bearbeiten':'Neue Kosten'}</h2><form data-form="kosSave" data-id="${id||''}" style="display:flex;flex-direction:column;gap:12px"><div class="row2">${fld('ks-d','Datum',k.d,'type="date" required')}${fld('ks-b','Betrag in €',k.b===''?'':numIn(k.b),'inputmode="decimal" required')}</div>${fld('ks-t','Was',k.t,'required')}${fld('ks-m','Beleg / Hinweis',k.m)}${btnRow(id?'kosDel':'')}</form>`);
+}
+function modalFill(d){
+  const v=curVeh();if(!v)return;const f=d?(S.sprit.get(v.id)||[]).find(x=>x.d===d):{d:today(),ppl:'',p:'',km:''};if(!f)return;
+  const lastKm=Math.max(0,...(S.sprit.get(v.id)||[]).map(x=>x.km||0));
+  openModal(`<h2>${d?'Tankvorgang bearbeiten':'Tankvorgang'} · ${esc(v.n)}</h2><form data-form="fillSave" data-d="${d||''}" style="display:flex;flex-direction:column;gap:12px"><div class="row2">${fld('sf-d','Datum',f.d,'type="date" required')}${fld('sf-ppl','Preis pro Liter in €',f.ppl===''?'':numIn(f.ppl),'inputmode="decimal" required')}</div><div class="row2">${fld('sf-p','Gesamtbetrag in €',f.p===''?'':numIn(f.p),'inputmode="decimal" required')}${fld('sf-km','Kilometerstand',f.km==null?'':f.km,'inputmode="numeric" placeholder="'+(lastKm||'')+'"')}</div>
+  ${d?'':`<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="sf-buch" checked> auch als Buchung eintragen, von</label>${sel('sf-konto','Konto',konten().filter(k=>k.a!==false).map(k=>k.n),(S.cfgLastVon||''))}`}
+  ${btnRow(d?'fillDel':'')}</form>`);
+}
+function defVon(){let l='';try{l=localStorage.getItem('hb-von')}catch(x){}const f=konten().find(k=>k.a!==false);return l||(f?f.n:'')}
+function modalNewEntry(over){openModal(`<h2>Neuer Eintrag</h2><form data-form="entryNew" style="display:flex;flex-direction:column;gap:12px">${entryFields('m',Object.assign({d:today(),v:defVon(),k:'Andere'},over||{}))}${btnRow()}</form>`)}
+function modalVehicle(){openModal(`<h2>Neues Fahrzeug</h2><form data-form="vehNew" style="display:flex;flex-direction:column;gap:12px">${fld('ve-n','Name (z. B. VW Golf 2018)','','required')}${sel('ve-typ','Art',['Auto','Motorrad'],'Auto')}${fld('ve-t','Tankvolumen in Litern','','inputmode="numeric"')}${btnRow()}</form>`)}
+
+/* ---------- PDF / CSV ---------- */
+async function saveFile(name,data){
+  if(!window.claude)return HBX.saveFile(name,data,toast);
+  try{const d=await window.claude.use('downloads');if(!d){toast('Speichern ist in dieser Ansicht nicht verfügbar');return}await d.save({filename:name,data})}
+  catch(e){if(!e||e.code!=='declined')toast('Speichern nicht möglich: '+((e&&(e.code||e.message))||e))}
+}
+function pdf(title,sub,head,body,foot,name){
+  if(!(window.jspdf&&window.jspdf.jsPDF)){toast('PDF-Baustein konnte nicht geladen werden');return}
+  const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:head.length>7?'landscape':'portrait'});
+  doc.setFontSize(16);doc.text(title,14,16);doc.setFontSize(9);doc.setTextColor(90);doc.text(sub,14,22);
+  doc.autoTable({head:[head],body,foot:foot?[foot]:undefined,startY:27,styles:{fontSize:8,cellPadding:1.6},headStyles:{fillColor:[14,107,91]},footStyles:{fillColor:[230,238,235],textColor:20},margin:{left:14,right:14},didDrawPage:()=>{doc.setFontSize(8);doc.setTextColor(120);doc.text('Erstellt am '+pd(today()),14,doc.internal.pageSize.getHeight()-8)}});
+  saveFile(name,doc.output('arraybuffer'));
+}
+const pn=n=>nf.format(n);
+function csv(rows){return '﻿'+rows.map(r=>r.map(c=>{c=String(c==null?'':c);return /[;"\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(';')).join('\r\n')}
+function pdfSteuer(){
+  const y=String(S.sy),d=steuerData(y);const body=[];let sum=0;
+  d.ent.forEach(e=>{body.push([pd(e.d),e.st,e.n+(e.t?' – '+e.t:''),e.bl||'',pn(e.b)]);sum+=e.b});
+  d.kosten.forEach(k=>{body.push([pd(k.d),'manuell',k.t,k.m||'',pn(k.b)]);sum+=k.b});
+  body.sort((a,b)=>a[0].split('.').reverse().join('')<b[0].split('.').reverse().join('')?-1:1);
+  const km=d.fahrten.reduce((s,f)=>s+(+f.km||0),0);
+  pdf('Steuerübersicht '+y,'Absetzbare Kosten · Fahrten '+nf0.format(km)+' km × '+pn(CFG().pausch)+' EUR = '+pn(km*CFG().pausch)+' EUR',['Datum','Kategorie','Beschreibung','Beleg','Betrag EUR'],body,['','','','Summe',pn(sum)],'Steuer-'+y+'.pdf');
+}
+function pdfFahrten(){
+  const y=String(S.sy),d=steuerData(y);const km=d.fahrten.reduce((s,f)=>s+(+f.km||0),0);
+  pdf('Fahrtenbuch '+y,d.fahrten.length+' Fahrten',['Datum','Ort','Anlass','Kilometer'],d.fahrten.map(f=>[pd(f.d),f.o,f.t||'',nf0.format(f.km)]),['','','Summe',nf0.format(km)+' km'],'Fahrtenbuch-'+y+'.pdf');
+}
+function pdfSprit(){
+  const v=curVeh();if(!v)return;const rows=spritCalc(v.id).filter(r=>S.sv.year==='all'||r.d.startsWith(S.sv.year));
+  const sp=rows.reduce((s,r)=>s+r.p,0),li=rows.reduce((s,r)=>s+r.liter,0);const wk=rows.filter(r=>r.dk),k=wk.reduce((s,r)=>s+r.dk,0),lw=wk.reduce((s,r)=>s+r.liter,0);
+  pdf('Tankbuch '+v.n,(S.sv.year==='all'?'Alle Jahre':S.sv.year)+(k?' · Ø '+pn(lw/k*100)+' l/100 km':''),['Datum','EUR/l','Betrag EUR','Liter','km-Stand','gefahren km','l/100 km','EUR/km'],rows.map(r=>[pd(r.d),pn(r.ppl),pn(r.p),pn(r.liter),r.km!=null?nf0.format(r.km):'',r.dk?nf0.format(r.dk):'',r.l100?pn(r.l100):'',r.ekm?pn(r.ekm):'']),['Summe','',pn(sp),pn(li),'',nf0.format(k),'',''],'Tankbuch-'+v.n.replace(/[^\w]+/g,'_')+'.pdf');
+}
+function pdfSchein(){
+  const v=curVeh();if(!v)return;const l=svEntries(v).filter(e=>S.sv.year==='all'||e.d.startsWith(S.sv.year));const sum=l.reduce((s,e)=>s+e.b,0);
+  pdf('Scheckheft '+v.n,(S.sv.year==='all'?'Alle Jahre':S.sv.year)+' · '+l.length+' Einträge',['Datum','Art','Werkstatt / Empfänger','km-Stand','Info','Kosten EUR'],l.map(e=>[pd(e.d),e.ak||'Sonstiges',e.n,e.km?nf0.format(e.km):'',e.t||'',pn(e.b)]),['','','','','Summe',pn(sum)],'Scheckheft-'+v.n.replace(/[^\w]+/g,'_')+'.pdf');
+}
+function pdfAus(){
+  const r=rangeOf(),t=totals(S.asc.filter(e=>e.d>=r.from&&e.d<=r.to));
+  const rows=[...t.cats.entries()].sort((a,b)=>b[1].sum-a[1].sum).map(([c,o])=>[c,TYP_LABEL[o.typ],o.n,pn(o.sum)]);
+  pdf('Auswertung '+r.label,'Einnahmen '+pn(t.ein)+' EUR · Ausgaben '+pn(t.aus)+' EUR · Übrig '+pn(t.ein-t.aus)+' EUR',['Kategorie','Art','Anzahl','Summe EUR'],rows,null,'Auswertung.pdf');
+}
+function pdfJahr(){
+  const yr=yearRows().reverse();
+  pdf('Jahresübersicht','Einnahmen, Ausgaben und Übrig pro Jahr',['Jahr','Einnahmen EUR','Ausgaben EUR','Übrig EUR'],yr.map(r=>[r.y,pn(r.t.ein),pn(r.t.aus),pn(r.t.ein-r.t.aus)]),null,'Jahresuebersicht.pdf');
+}
+function csvAll(){saveFile('Haushaltsbuch.csv',csv([['Datum','Von','Nach','Betrag','Info','Kategorie','Zusatz','Steuer','Beleg','Fahrzeug','Art','km'],...S.asc.map(e=>[pd(e.d),e.v,e.n,String(e.b).replace('.',','),e.t,e.k,(e.z||[]).join(', '),e.st||'',e.bl||'',((vehicles().find(x=>x.id===e.fz)||{}).n)||'',e.ak||'',e.km||''])]))}
+function backup(){const o={config:CFG(),buchungen:S.asc,sprit:Object.fromEntries(S.sprit),steuer:Object.fromEntries(S.steuer),stand:new Date().toISOString()};saveFile('Haushaltsbuch-Sicherung-'+today()+'.json',JSON.stringify(o))}
+
+/* ---------- Aktionen ---------- */
+const A={
+  go:t=>go(t.dataset.v),
+  close:()=>closeModal(),
+  ck:t=>{const p=t.dataset.p;FC[p].k=t.dataset.v;FC[p].touched=true;$('#'+p+'-kc').innerHTML=chipsK(p)},
+  cz:t=>{const p=t.dataset.p,s=FC[p].z,v=t.dataset.v;s.has(v)?s.delete(v):s.add(v);FC[p].touched=true;$('#'+p+'-zc').innerHTML=chipsZ(p)},
+  tpl:t=>{const e=S.tpls[+t.dataset.i];FC.f={k:e.k,z:new Set(e.z||[]),touched:true};$('#f-von').value=e.v;$('#f-nach').value=e.n;if(e.st)$('#f-st').value=e.st;$('#f-kc').innerHTML=chipsK('f');$('#f-zc').innerHTML=chipsZ('f');$('#f-amt').focus()},
+  edit:t=>modalEntry(t.dataset.id),
+  entryDel:t=>{if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich löschen?';return}removeEntry($('[data-form=entryEdit]').dataset.id);closeModal();toast('Buchung gelöscht')},
+  bMore:()=>{S.bf.lim+=150;fillBuchungen()},
+  bReset:()=>{S.bf={from:'',to:'',q:'',konto:'',cat:'',st:false,lim:150};render()},
+  aMode:t=>{S.av.mode=t.dataset.v;render()},
+  aRange:t=>{S.av.range=t.dataset.v;render()},
+  aPrev:()=>{const a=S.av;if(a.range==='month'){a.m--;if(a.m<0){a.m=11;a.y--}}else a.y--;render()},
+  aNext:()=>{const a=S.av;if(a.range==='month'){a.m++;if(a.m>11){a.m=0;a.y++}}else a.y++;render()},
+  aCat:t=>{const r=rangeOf();S.bf={from:r.from.length===10?r.from:'',to:r.to.length===10?r.to.replace(/-31$/,'-'+pad(new Date(+r.to.slice(0,4),+r.to.slice(5,7),0).getDate())):'',q:'',konto:'',cat:t.dataset.c,st:false,lim:150};go('buchungen')},
+  aYear:t=>{S.av.yy=+t.dataset.y;render()},
+  kEdit:t=>modalKonto(t.dataset.n),kNew:()=>modalKonto(null),kArch:()=>{S.kArch=!S.kArch;render()},
+  kTog:t=>{const k=konten().find(x=>x.n===t.dataset.n);k.a=k.a===false?true:false;saveCfg();closeModal();refresh()},
+  rEdit:t=>modalRule(t.dataset.id),rNew:t=>modalRule(null,t.dataset.t),
+  ruleDel:t=>{if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich löschen?';return}const id=$('[data-form=ruleSave]').dataset.id;CFG().regeln=CFG().regeln.filter(r=>r.id!==id);saveCfg();closeModal();refresh()},
+  dueBook:t=>{const r=CFG().regeln.find(x=>x.id===t.dataset.id);const ds=dues(r,today());ds.forEach(d=>putEntry(ruleEntry(r,d)));r.last=ds[ds.length-1];saveCfg();rebuild();refresh();toast(r.n+' gebucht')},
+  dueSkip:t=>{const r=CFG().regeln.find(x=>x.id===t.dataset.id);const ds=dues(r,today());r.last=ds[ds.length-1];saveCfg();refresh()},
+  stMark:t=>{const e=clone(S.byId.get(t.dataset.id));const z=(e.z||[]).find(x=>STMAP[x]);e.st=STMAP[z];updateEntry(e)},
+  fNew:()=>modalFahrt(null),fEdit:t=>modalFahrt(t.dataset.id),
+  kosNew:()=>modalKosten(null),kosEdit:t=>modalKosten(t.dataset.id),
+  fahrtDel:t=>delSt(t,'fahrten','fahrtSave'),kosDel:t=>delSt(t,'kosten','kosSave'),
+  sNew:()=>modalFill(null),sEdit:t=>modalFill(t.dataset.d),vNew:()=>modalVehicle(),vArch:()=>{S.sv.arch=!S.sv.arch;render()},
+  vToggle:t=>{const v=vehicles().find(x=>x.id===t.dataset.id);v.a=v.a===false?true:false;saveCfg();S.sv.id='';render()},
+  fillDel:t=>{if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich löschen?';return}const v=curVeh(),d=$('[data-form=fillSave]').dataset.d;S.sprit.set(v.id,(S.sprit.get(v.id)||[]).filter(x=>x.d!==d));saveSprit(v.id);closeModal();refresh()},
+  catTog:t=>{const k=CFG()[t.dataset.l].find(x=>x.n===t.dataset.n);k.a=k.a===false?true:false;saveCfg();refresh()},
+  vTab:t=>{S.sv.tab=t.dataset.v;render()},vMode:t=>{S.sv.mode=t.dataset.v;render()},svArt:t=>{S.sv.art=t.dataset.v;render()},
+  svNew:()=>modalNewEntry({fz:curVeh().id,ak:'Inspektion',z:[curVeh().typ||'Auto']}),
+  svAssign:t=>modalEntry(t.dataset.id,{fz:curVeh().id}),
+  pdfSteuer,pdfFahrten,pdfSprit,pdfSchein,pdfAus,pdfJahr,csvAll,backup
+};
+function delSt(t,kind,formName){
+  if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich löschen?';return}
+  const id=$('[data-form='+formName+']').dataset.id;
+  S.steuer.forEach((d,y)=>{if(d[kind].some(x=>x.i===id)){d[kind]=d[kind].filter(x=>x.i!==id);saveSteuer(y)}});
+  closeModal();refresh();
+}
+function putSt(kind,obj,oldId){
+  S.steuer.forEach((d,y)=>{if(d[kind].some(x=>x.i===oldId)){d[kind]=d[kind].filter(x=>x.i!==oldId);saveSteuer(y)}});
+  const y=obj.d.slice(0,4);const d=stDoc(y);d[kind].push(obj);saveSteuer(y);
+}
+const FORMS={
+  ef:()=>{
+    const e=readEntry('f');if(!e)return;
+    try{localStorage.setItem('hb-von',e.v)}catch(x){}
+    addEntry(e);
+    $('#f-amt').value='';$('#f-info').value='';$('#f-nach').value='';$('#f-bl').value='';$('#f-st').value='';
+    FC.f.touched=false;FC.f.z=new Set();$('#f-zc').innerHTML=chipsZ('f');
+    toast('Gebucht: '+eur(e.b)+' → '+e.n);$('#f-amt').focus();
+  },
+  entryNew:()=>{const e=readEntry('m');if(!e)return;try{localStorage.setItem('hb-von',e.v)}catch(x){}addEntry(e);closeModal();toast('Gebucht: '+eur(e.b))},
+  entryEdit:f=>{const e=readEntry('m',f.dataset.id);if(!e)return;updateEntry(e);closeModal();toast('Gespeichert')},
+  ruleSave:f=>{
+    const id=f.dataset.id,typ=f.dataset.typ,b=parseNum($('#r-b').value);if(isNaN(b)){toast('Bitte einen Betrag angeben');return}
+    const old=id?CFG().regeln.find(r=>r.id===id):null;
+    const r={id:id||uid('r'),typ,n:$('#r-n').value.trim(),b,iv:+$('#r-iv').value,start:$('#r-start').value,t:$('#r-t').value.trim(),konto:$('#r-konto').value,k:$('#r-k').value,z:$('#r-z').value?[$('#r-z').value]:[],auto:$('#r-auto').value==='1',a:$('#r-act').checked,last:old?old.last:null};
+    if($('#r-st').value)r.st=$('#r-st').value;
+    if(!old){const d=dues({...r,last:null},today());r.last=d.length?d[d.length-1]:addM(r.start,-r.iv,+r.start.slice(8,10));
+      // neue Regel: vergangene Fälligkeiten werden nicht nachgebucht, ab heute läuft sie automatisch
+      CFG().regeln.push(r)}else CFG().regeln[CFG().regeln.indexOf(old)]=r;
+    saveCfg();closeModal();refresh();
+  },
+  abgleich:f=>{
+    const n=f.dataset.n,ist=parseNum($('#ab-ist').value);if(isNaN(ist)){toast('Bitte den Kontostand eintragen');return}
+    const soll=balances()[lc(n)];const e=ausgleichEntry(n,ist,soll,$('#ab-d').value||today());
+    if(!e){toast('Stimmt bereits überein');closeModal();return}
+    addEntry(e);closeModal();toast('Ausgleich gebucht: '+sgn(e.v==='Ausgleich'?e.b:-e.b,true));
+  },
+  kontoSave:f=>{const k=konten().find(x=>x.n===f.dataset.n);k.g=$('#ko-g').value.trim();const s=parseNum($('#ko-s').value);if(!isNaN(s))k.start=s;saveCfg();closeModal();refresh()},
+  kontoNew:()=>{
+    const n=$('#ko-n').value.trim();if(!n)return;if(isKonto(n)){toast('Dieses Konto gibt es schon');return}
+    const s=parseNum($('#ko-s').value)||0;konten().push({n,start:0,g:$('#ko-g').value.trim()||'Sonstige',a:true});saveCfg();
+    if(s){const e=ausgleichEntry(n,s,0,today());e.t='Startsaldo';addEntry(e)}
+    closeModal();refresh();
+  },
+  fahrtSave:f=>{const km=parseNum($('#fa-km').value);if(isNaN(km)){toast('Bitte Kilometer angeben');return}putSt('fahrten',{i:f.dataset.id||uid('f'),d:$('#fa-d').value,km,o:$('#fa-o').value.trim(),t:$('#fa-t').value.trim()},f.dataset.id);S.sy=+$('#fa-d').value.slice(0,4);closeModal();refresh()},
+  kosSave:f=>{const b=parseNum($('#ks-b').value);if(isNaN(b)){toast('Bitte Betrag angeben');return}putSt('kosten',{i:f.dataset.id||uid('k'),d:$('#ks-d').value,b,t:$('#ks-t').value.trim(),m:$('#ks-m').value.trim()},f.dataset.id);S.sy=+$('#ks-d').value.slice(0,4);closeModal();refresh()},
+  fillSave:f=>{
+    const v=curVeh(),ppl=parseNum($('#sf-ppl').value),p=parseNum($('#sf-p').value),km=parseNum($('#sf-km').value);
+    if(isNaN(ppl)||isNaN(p)||ppl<=0){toast('Bitte Literpreis und Betrag angeben');return}
+    const o={d:$('#sf-d').value,ppl:Math.round(ppl*1000)/1000,p:Math.round(p*100)/100,km:isNaN(km)?null:Math.round(km)};
+    const old=f.dataset.d;let l=(S.sprit.get(v.id)||[]).filter(x=>x.d!==old);l.push(o);S.sprit.set(v.id,l);saveSprit(v.id);
+    if(!old&&$('#sf-buch')&&$('#sf-buch').checked){const z=['Auto','Fahrtkosten'].filter(x=>CFG().zusatz.some(y=>y.n===x));addEntry({i:uid('e'),d:o.d,v:$('#sf-konto').value,n:'Tankstelle',b:o.p,t:'Tanken '+v.n,k:'Andere',z,fz:v.id,ak:'Sprit'})}
+    closeModal();refresh();
+  },
+  vehNew:()=>{const n=$('#ve-n').value.trim();if(!n)return;const v={id:uid('v'),n,typ:$('#ve-typ').value,tank:parseNum($('#ve-t').value)||0,a:true};vehicles().push(v);S.sv.id=v.id;saveCfg();closeModal();refresh()},
+  catAdd:f=>{const l=f.dataset.l,n=f.elements.n.value.trim();if(!n)return;if(CFG()[l].some(x=>lc(x.n)===lc(n))){toast('Gibt es schon');return}const o={n,a:true};if(l==='kats')o.typ=f.elements.typ.value;CFG()[l].push(o);saveCfg();refresh()},
+  pausch:()=>{const v=parseNum($('#pa').value);if(!isNaN(v)){CFG().pausch=v;saveCfg();toast('Gespeichert')}}
+};
+
+document.addEventListener('click',ev=>{
+  const t=ev.target.closest('[data-act]');
+  if(ev.target.id==='modal'){closeModal();return}
+  if(t&&A[t.dataset.act]){if(t.tagName==='TR'||t.tagName==='BUTTON'||t.tagName==='DIV'||true)A[t.dataset.act](t,ev)}
+});
+document.addEventListener('submit',ev=>{
+  ev.preventDefault();const f=ev.target;const id=f.id==='ef'?'ef':f.dataset.form;if(FORMS[id])FORMS[id](f);
+});
+document.addEventListener('change',ev=>{
+  const t=ev.target;
+  if(t.id==='f-nach'||t.id==='m-nach')fillFromKnown(t.dataset.p);
+  if(t.id==='f-von'||t.id==='m-von'){const p=t.id[0];if(isKonto($('#'+p+'-nach').value))fillFromKnown(p)}
+  if(t.id==='sy'){S.sy=+t.value;render()}
+  if(t.id==='sv-v'){S.sv.id=t.value;render()}
+  if(t.id==='sv-y'){S.sv.year=t.value;render()}
+  if(S.view==='buchungen'){const m={'b-konto':'konto','b-cat':'cat','b-from':'from','b-to':'to'}[t.id];if(m){S.bf[m]=t.value;S.bf.lim=150;fillBuchungen()}if(t.id==='b-st'){S.bf.st=t.checked;fillBuchungen()}}
+});
+document.addEventListener('input',ev=>{
+  const t=ev.target;
+  if(t.id==='b-q'){S.bf.q=t.value;S.bf.lim=150;fillBuchungen()}
+  if(t.id==='ab-ist'){const k=$('[data-form=abgleich]');if(!k)return;const ist=parseNum(t.value),soll=balances()[lc(k.dataset.n)];$('#ab-diff').textContent=isNaN(ist)?'':'Differenz: '+sgn(ist-soll,true)}
+});
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeModal()});
+document.addEventListener('focusout',()=>{setTimeout(()=>{if(S.pending&&!$('#modal.open')&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#main')&&/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName))){refresh()}},150)});
+window.addEventListener('hashchange',route);
+
+/* ---------- Start: Datenbank verbinden ---------- */
+function setSync(ok,txt){const s=$('#sync');s.className='sync'+(ok?'':' wait');s.querySelector('span').textContent=txt}
+function maybeBoot(){
+  if(!S.got.c||!S.got.m)return;
+  if(!S.booted){S.booted=true;rebuild();updateHeader();updateLists();route()}
+  if(S.fresh.c&&S.fresh.m&&!S.auto){S.auto=true;autoBook()}
+  if(S.fresh.c&&S.fresh.m&&!window.GH_MODE)setSync(true,'synchron')
+}
+async function start(){
+  renderTabs();
+  if(window.claude){try{db=await window.claude.use('db')}catch(e){db=null}}
+  else{const c=HBX.ghLoad();if(!c){renderSetup();return}window.GH_MODE=true;window.GH_CFG=c;db=HBX.ghMake(c,onGhStatus)}
+  if(!db){$('#main').innerHTML='<div class="empty">Die Datenbank ist hier nicht verfügbar. Öffne die Seite über deinen claude.ai-Link, angemeldet mit deinem Konto.</div>';$('#hsum').textContent='';setSync(false,'offline');return}
+  const timer=setTimeout(()=>{if(!(S.fresh.c&&S.fresh.m)){setSync(false,'Daten evtl. nicht aktuell');if(!S.booted){S.got.c=S.got.m=true;maybeBoot()}}},10000);
+  const err=e=>{setSync(false,'Fehler: '+(e&&e.code||'unbekannt'))};
+  db.doc('config/main').onSnapshot(s=>{
+    if(!dirty.c){S.cfg=s.exists?s.data():null;if(S.cfg)S.cfg=clone(S.cfg);const c=CFG();for(const k of['kats','zusatz','steuerKats','konten','fahrzeuge','regeln']){if(!c[k])c[k]=defCfg()[k]}if(c.pausch==null)c.pausch=0.30;if(!c.stichtag)c.stichtag=today()}
+    S.got.c=true;if(!s.metadata.fromCache)S.fresh.c=true;
+    if(S.booted){rebuild();refresh()}maybeBoot();
+  },err);
+  db.collection('monate').onSnapshot(s=>{
+    s.docChanges().forEach(ch=>{const id=ch.doc.id;if(dirty.m.has(id))return;if(ch.type==='removed')S.months.delete(id);else S.months.set(id,clone(ch.doc.data().e||[]))});
+    S.got.m=true;if(!s.metadata.fromCache)S.fresh.m=true;
+    if(S.booted){rebuild();refresh()}maybeBoot();
+  },err);
+  db.collection('sprit').onSnapshot(s=>{
+    s.docChanges().forEach(ch=>{const id=ch.doc.id;if(dirty.s.has(id))return;if(ch.type==='removed')S.sprit.delete(id);else S.sprit.set(id,clone(ch.doc.data().f||[]))});
+    if(S.booted)refresh();
+  },err);
+  db.collection('steuer').onSnapshot(s=>{
+    s.docChanges().forEach(ch=>{const id=ch.doc.id;if(dirty.t.has(id))return;if(ch.type==='removed')S.steuer.delete(id);else{const d=clone(ch.doc.data());S.steuer.set(id,{fahrten:d.fahrten||[],kosten:d.kosten||[]})}});
+    if(S.booted)refresh();
+  },err);
+  if(window.GH_MODE)db.startSync();
+}
+
+/* ===== Zusatz für die eigenständige App ===== */
+function onGhStatus(s){setSync(s.state==='ok'||s.state==='busy',s.msg||'');window.GH_STATE=s;const e=$('#ghstate');if(e)e.textContent=s.msg||''}
+function ghCard(){
+  if(!window.GH_MODE)return '';const c=window.GH_CFG;
+  return `<div class="card"><h3>Verbindung</h3><div class="small muted">Deine Daten liegen auf diesem Gerät und im privaten Repository <b>${esc(c.owner)}/${esc(c.repo)}</b>.</div><div class="small" id="ghstate">${esc((window.GH_STATE||{}).msg||'')}</div><div class="btns"><button class="btn" data-act="ghSync">Jetzt synchronisieren</button><button class="btn" data-act="ghCode">Kopplungscode für ein anderes Gerät</button><button class="btn dng" data-act="ghOut" data-confirm="1">Trennen</button></div></div>`;
+}
+A.ghSync=()=>{db.sync();toast('Synchronisiere …')};
+A.ghCode=()=>{openModal(`<h2>Kopplungscode</h2><div class="small muted">Enthält deinen Zugangs-Token. Schick ihn nur dir selbst (z. B. als Notiz oder Nachricht an dich) und lösche ihn danach. Auf dem anderen Gerät beim ersten Start einfügen.</div><textarea id="gc" rows="5" readonly style="font:12px monospace">${esc(HBX.makeCode(window.GH_CFG))}</textarea><div class="btns"><button class="btn pri" data-act="ghCopy">Kopieren</button><button class="btn" data-act="close">Schließen</button></div>`)};
+A.ghCopy=async()=>{const t=$('#gc');t.select();try{await navigator.clipboard.writeText(t.value);toast('Kopiert')}catch(e){toast('Markiert, bitte von Hand kopieren')}};
+A.ghOut=t=>{if(t.dataset.confirm==='1'){t.dataset.confirm='2';const n=db.pending();t.textContent=n?'Achtung: '+n+' Änderungen noch nicht hochgeladen. Trotzdem trennen?':'Wirklich trennen? Lokale Kopie wird gelöscht';return}HBX.ghClear();location.reload()};
+function renderSetup(){
+  setSync(false,'nicht verbunden');$('#hsum').textContent='';$('#tabs').innerHTML='';
+  $('#main').innerHTML=`<div class="card"><h2>Mit dem Daten-Repository verbinden</h2><div class="small muted">Einmalig pro Gerät. Deine Daten liegen in einem privaten GitHub-Repository, so sind Handy und PC synchron.</div>
+  <form data-form="ghCode" style="display:flex;flex-direction:column;gap:10px"><div class="field"><label for="gh-code">Kopplungscode (wenn schon ein Gerät verbunden ist)</label><textarea id="gh-code" rows="3" placeholder="HB1.…"></textarea></div><button class="btn pri" type="submit">Mit Code verbinden</button></form></div>
+  <form class="card" data-form="ghManual"><h3>Oder von Hand</h3><div class="field"><label for="gh-o">GitHub-Benutzername</label><input id="gh-o" autocapitalize="none" autocomplete="off"></div><div class="field"><label for="gh-r">Name des Daten-Repositorys</label><input id="gh-r" value="haushaltsbuch-daten" autocapitalize="none" autocomplete="off"></div><div class="field"><label for="gh-t">Zugangs-Token</label><input id="gh-t" type="password" autocapitalize="none" autocomplete="off" placeholder="github_pat_…"></div><button class="btn pri" type="submit">Verbinden</button></form>
+  <div id="gh-err" class="small neg"></div>`;
+}
+async function ghDo(c){const err=$('#gh-err');err.textContent='Verbinde …';try{await HBX.ghConnect(c);err.textContent='';await start()}catch(e){err.textContent=(e&&e.message)||String(e);if(String(e&&e.message).startsWith('Failed')||e instanceof TypeError)err.textContent='Keine Verbindung zu GitHub. Internet prüfen.'}}
+FORMS.ghCode=()=>{try{ghDo(HBX.parseCode($('#gh-code').value))}catch(e){$('#gh-err').textContent=e.message}};
+FORMS.ghManual=()=>{const o=$('#gh-o').value.trim(),r=$('#gh-r').value.trim(),t=$('#gh-t').value.trim();if(!o||!r||!t){$('#gh-err').textContent='Bitte alle drei Felder ausfüllen.';return}ghDo({owner:o,repo:r,token:t})};
+if(window.HBX&&HBX.isNative()){try{const AP=Capacitor.registerPlugin('App');AP.addListener('backButton',()=>{if($('#modal.open'))closeModal();else if(S.view!=='eintragen')go('eintragen');else AP.exitApp()})}catch(e){}}
+if('serviceWorker' in navigator&&window.HBX&&!HBX.isNative()&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+start();
+</script>
+
+</body></html>
