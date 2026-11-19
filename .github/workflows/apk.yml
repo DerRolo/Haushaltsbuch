@@ -29,9 +29,6 @@ jobs:
       - name: Android-Projekt erzeugen
         run: npx cap add android
 
-      - name: Icon einsetzen
-        run: cp -r resources/android/res/. android/app/src/main/res/
-
       - name: Web-App ins Projekt kopieren
         run: npx cap sync android
 
