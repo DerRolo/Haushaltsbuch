@@ -1,0 +1,7 @@
+{
+  "appId": "de.haushaltsbuch.app",
+  "appName": "Haushaltsbuch",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "android": { "backgroundColor": "#F2F4F3" }
+}
