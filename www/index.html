@@ -107,6 +107,8 @@ tfoot td{font-weight:700}
 #toast.on{display:block}
 #toast .tbtn{background:none;border:0;color:inherit;text-decoration:underline;font-weight:700;margin-left:14px;padding:4px 2px;cursor:pointer}
 .dtrow{display:flex;gap:4px;align-items:stretch}.dtrow input{flex:1;min-width:0;text-align:center;padding-left:2px;padding-right:2px;font-size:14px}.dtrow .btn{min-width:28px;padding:0 4px;min-height:0;font-size:16px}
+.dt3{display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:6px}.dcol{display:flex;gap:2px;align-items:stretch;min-width:0}.dcol input{flex:1;min-width:0;width:100%;text-align:center;padding:0 2px;font-size:15px}.dcol .btn{min-width:26px;padding:0 3px;min-height:38px;font-size:17px;line-height:1}
+.lnk{background:none;border:0;color:var(--accent);font-size:12px;font-weight:600;padding:0 0 0 6px;text-decoration:underline}
 .acw{position:relative}
 .ac{position:absolute;left:0;right:0;top:100%;z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-top:2px;box-shadow:0 6px 18px rgba(0,0,0,.18);max-height:260px;overflow:auto}
 .aci{padding:9px 12px;font-size:14px;cursor:pointer}.aci.on{background:var(--accent);color:var(--accent-ink)}
@@ -178,14 +180,36 @@ function parseDateIn(txt,base){
   if(mo<1||mo>12||d<1||d>new Date(y,mo,0).getDate())return '';
   return y+'-'+pad(mo)+'-'+pad(d);
 }
-function dateIn(p,iso){return `<div class="dtrow"><button type="button" class="btn sm" data-act="dstep" data-p="${p}" data-n="-1" aria-label="Einen Tag zurück" tabindex="-1">‹</button><input id="${p}-date" class="dt" data-iso="${iso}" value="${pd(iso)}" inputmode="numeric" autocomplete="off" aria-label="Datum"><button type="button" class="btn sm" data-act="dstep" data-p="${p}" data-n="1" aria-label="Einen Tag vor" tabindex="-1">›</button></div>`}
-function setDate(p,iso){const i=$('#'+p+'-date');i.dataset.iso=iso;i.value=pd(iso)}
-function getDate(p){const i=$('#'+p+'-date');const iso=parseDateIn(i.value,i.dataset.iso||today());if(!iso)return '';setDate(p,iso);return iso}
+const DSEL=()=>{if(S.dsel&&S.dsel.t===today())return S.dsel.d;try{const o=JSON.parse(localStorage.getItem('hb-date')||'null');if(o&&o.t===today()&&o.d)return o.d}catch(e){}return today()};
+function remember(iso){S.dsel={d:iso,t:today()};try{localStorage.setItem('hb-date',JSON.stringify(S.dsel.d?{d:iso,t:today()}:null))}catch(e){}}
+function dateIn(p,iso){
+  const [y,m,d]=iso.split('-');
+  const col=(u,v,ph,ml,lab)=>`<div class="dcol"><button type="button" class="btn sm" data-act="dstep" data-p="${p}" data-u="${u}" data-n="-1" aria-label="${lab} zurück" tabindex="-1">−</button><input id="${p}-d${u}" class="dp" data-p="${p}" data-u="${u}" value="${v}" placeholder="${ph}" maxlength="${ml}" inputmode="numeric" autocomplete="off" aria-label="${lab}"><button type="button" class="btn sm" data-act="dstep" data-p="${p}" data-u="${u}" data-n="1" aria-label="${lab} vor" tabindex="-1">+</button></div>`;
+  return `<div class="dt3" id="${p}-date" data-iso="${iso}">${col('y',y,'JJJJ',4,'Jahr')}${col('m',m,'MM',2,'Monat')}${col('d',d,'TT',2,'Tag')}</div>`;
+}
+function dateField(p,label,iso){return `<div class="field"><label for="${p}-dd">${label}${'ufmst'.includes(p)&&p!=='u'?` <button type="button" class="lnk" data-act="dtoday" data-p="${p}" tabindex="-1">heute</button>`:''}</label>${dateIn(p,iso)}</div>`}
+function readDate(p){
+  const g=u=>($('#'+p+'-d'+u).value||'').trim();let y=g('y'),m=g('m'),d=g('d');
+  if(!/^\d{1,4}$/.test(y)||!/^\d{1,2}$/.test(m)||!/^\d{1,2}$/.test(d))return '';
+  y=+y;m=+m;d=+d;if(y<100)y+=2000;
+  if(y<1990||y>2100||m<1||m>12||d<1||d>new Date(y,m,0).getDate())return '';
+  return y+'-'+pad(m)+'-'+pad(d);
+}
+function setDate(p,iso,keep){
+  const c=$('#'+p+'-date');c.dataset.iso=iso;const [y,m,d]=iso.split('-');$('#'+p+'-dy').value=y;$('#'+p+'-dm').value=m;$('#'+p+'-dd').value=d;
+  if(!keep&&'fts'.includes(p))remember(iso);
+}
+function getDate(p){const iso=readDate(p);if(!iso)return '';setDate(p,iso);return iso}
+function stepDate(p,u,n){
+  const cur=readDate(p)||$('#'+p+'-date').dataset.iso;
+  const nx=u==='d'?isoAdd(cur,n):addM(cur,(u==='m'?1:12)*n,+cur.slice(8,10));
+  setDate(p,nx);updPrev(p);if(p==='s'||p==='u')serPrev();
+}
 function updPrev(p){
-  const el=$('#'+p+'-prev');if(!el)return;const i=$('#'+p+'-date');if(!i)return;
-  const iso=parseDateIn(i.value,i.dataset.iso||today());const b=parseNum(($('#'+p+'-amt')||{}).value);
+  const el=$('#'+p+'-prev');if(!el)return;
+  const iso=readDate(p);const b=parseNum(($('#'+p+'-amt')||{}).value);
   const v=($('#'+p+'-von')||{}).value||'',n=($('#'+p+'-nach')||{}).value||'';
-  el.textContent=iso?WD[new Date(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10)).getDay()]+' '+pd(iso)+(isNaN(b)?'':' · '+eur(b))+(v||n?' · '+(v||'?')+' → '+(n||'?'):''):'Datum nicht erkannt';
+  el.textContent=iso?WD[new Date(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10)).getDay()]+' '+pd(iso)+(isNaN(b)?'':' · '+eur(b))+(v||n?' · '+(v||'?')+' → '+(n||'?'):''):'Datum unvollständig';
 }
 
 /* ---------- Standardwerte ---------- */
@@ -271,8 +295,8 @@ function chipsZ(p){const sel=FC[p].z;return activeZus(sel).map(k=>`<button type=
 function stOpts(sel){return '<option value="">– nicht für die Steuer –</option>'+CFG().steuerKats.filter(k=>k.a!==false||k.n===sel).map(k=>`<option ${k.n===sel?'selected':''}>${esc(k.n)}</option>`).join('')}
 function entryFields(p,e){
   FC[p]={k:e.k||'',z:new Set(e.z||[]),touched:!!e.i};
-  return `<div class="row2"><div class="field"><label for="${p}-date">Datum</label>${dateIn(p,e.d||today())}</div>
-  <div class="field"><label for="${p}-amt">Betrag in €</label><input id="${p}-amt" class="amt-in" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${e.b!=null?numIn(e.b):''}"></div></div>
+  return `${dateField(p,p==='s'?'Erste Buchung am':'Datum',e.d||DSEL())}
+  <div class="field"><label for="${p}-amt">Betrag in €</label><input id="${p}-amt" class="amt-in" inputmode="decimal" autocomplete="off" placeholder="0,00" value="${e.b!=null?numIn(e.b):''}"></div>
   <div class="row2"><div class="field"><label for="${p}-von">Von (Konto / Quelle)</label><input id="${p}-von" data-ac="1" autocomplete="off" value="${esc(e.v||'')}"></div>
   <div class="field"><label for="${p}-nach">Nach (Konto / Empfänger)</label><input id="${p}-nach" data-ac="1" autocomplete="off" data-p="${p}" value="${esc(e.n||'')}"></div></div>
   <div class="field"><label for="${p}-info">Info (optional)</label><input id="${p}-info" autocomplete="off" value="${esc(e.t||'')}"></div>
@@ -288,7 +312,7 @@ function entryFields(p,e){
 }
 function readEntry(p,id){
   const d=getDate(p),b=parseNum($('#'+p+'-amt').value),v=$('#'+p+'-von').value.trim(),n=$('#'+p+'-nach').value.trim();
-  if(!d){toast('Datum nicht erkannt (z. B. 5.3. oder +1)');return null}
+  if(!d){toast('Datum unvollständig oder ungültig');return null}
   if(isNaN(b)){toast('Bitte einen Betrag angeben');return null}
   if(!v||!n){toast('Bitte „Von“ und „Nach“ ausfüllen');return null}
   const e={i:id||uid('e'),d,v,n,b:Math.round(b*100)/100,t:$('#'+p+'-info').value.trim(),k:FC[p].k,ts:Date.now()};
@@ -376,7 +400,7 @@ const V={},AFTER={};
 V.eintragen=()=>{
   const last=(()=>{try{return localStorage.getItem('hb-von')}catch(e){return ''}})();
   const first=konten().find(k=>k.a!==false);
-  const e={d:today(),v:last||(first?first.n:''),k:'Andere'};
+  const e={d:DSEL(),v:last||(first?first.n:''),k:'Andere'};
   const t=S.emode==='t';
   return `<div id="banner"></div>
   <div class="chips" style="margin-bottom:10px"><button type="button" class="chip ${t?'':'on'}" data-act="emode" data-v="b">Buchung</button><button type="button" class="chip ${t?'on':''}" data-act="emode" data-v="t">⛽ Tanken</button><button type="button" class="chip ${S.emode==='s'?'on':''}" data-act="emode" data-v="s">🔁 Serie nachtragen</button></div>
@@ -397,15 +421,15 @@ function serieDates(start,end,iv){
 }
 function serieForm(){
   const last=(()=>{try{return localStorage.getItem('hb-von')}catch(e){return ''}})();const first=konten().find(k=>k.a!==false);
-  const e={d:today(),v:last||(first?first.n:''),k:'Fixkosten'};
+  const e={d:DSEL(),v:last||(first?first.n:''),k:'Fixkosten'};
   return `<form class="card" id="sf2" autocomplete="off"><div class="small muted">Für vergessene regelmäßige Zahlungen: Es werden alle Termine von „Datum“ bis „Bis“ gebucht.</div>
-  <div class="row2">${sel('s-iv','Wiederholung',IVS,'m')}<div class="field"><label for="u-date">Bis (einschließlich)</label>${dateIn('u',today())}</div></div>
-  ${entryFields('s',e).replace('>Datum<','>Erste Buchung am<')}
+  ${sel('s-iv','Wiederholung',IVS,'m')}${dateField('u','Bis (einschließlich)',today())}
+  ${entryFields('s',e)}
   <div class="hint" id="s-cnt"></div>
   <div class="btns"><button class="btn pri" type="submit" style="flex:1">Alle buchen</button></div></form>`;
 }
 function serPrev(){
-  const el=$('#s-cnt');if(!el)return;const a=parseDateIn($('#s-date').value,$('#s-date').dataset.iso),b=parseDateIn($('#u-date').value,$('#u-date').dataset.iso),amt=parseNum($('#s-amt').value);
+  const el=$('#s-cnt');if(!el)return;const a=readDate('s'),b=readDate('u'),amt=parseNum($('#s-amt').value);
   if(!a||!b){el.textContent='';return}
   const ds=serieDates(a,b,$('#s-iv').value);
   el.textContent=ds.length?ds.length+' Buchungen · '+pd(ds[0])+' bis '+pd(ds[ds.length-1])+(isNaN(amt)?'':' · zusammen '+eur(amt*ds.length)):'Keine Termine im Zeitraum';
@@ -421,8 +445,8 @@ function tankForm(){
   if(!vs.length)return '<div class="card"><div class="empty">Lege zuerst im Tab „Auto“ ein Fahrzeug an, dann kannst du hier tanken.</div></div>';
   let tv='';try{tv=localStorage.getItem('hb-tv')||''}catch(e){}if(!vs.some(v=>v.id===tv))tv=vs[0].id;
   const lastKm=Math.max(0,...(S.sprit.get(tv)||[]).map(x=>x.km||0));
-  return `<form class="card" id="tf" autocomplete="off"><div class="row2"><div class="field"><label for="t-fz">Fahrzeug</label><select id="t-fz">${vs.map(v=>`<option value="${v.id}" ${v.id===tv?'selected':''}>${esc(v.n)}</option>`).join('')}</select></div>
-  <div class="field"><label for="t-date">Datum</label>${dateIn('t',today())}</div></div>
+  return `<form class="card" id="tf" autocomplete="off"><div class="field"><label for="t-fz">Fahrzeug</label><select id="t-fz">${vs.map(v=>`<option value="${v.id}" ${v.id===tv?'selected':''}>${esc(v.n)}</option>`).join('')}</select></div>
+  </div>${dateField('t','Datum',DSEL())}
   <div class="row2">${fld('t-p','Gesamtbetrag in €','','inputmode="decimal" autocomplete="off" placeholder="0,00" class="amt-in"')}${fld('t-ppl','Preis pro Liter in €','','inputmode="decimal" autocomplete="off" placeholder="1,789"')}</div>
   <div class="row2">${fld('t-km','Kilometerstand (optional)','','inputmode="numeric" autocomplete="off" placeholder="'+(lastKm||'')+'"')}${sel('t-konto','Bezahlt von',konten().filter(k=>k.a!==false).map(k=>k.n),defVon())}</div>
   <div class="hint" id="t-prev"></div>
@@ -493,7 +517,8 @@ function acPick(v){
   if(inp.id.endsWith('-nach'))fillFromKnown(p);else if(isKonto($('#'+p+'-nach').value))fillFromKnown(p);
   updPrev(p);const nx=$('#'+p+(inp.id.endsWith('-von')?'-nach':'-info'));if(nx){nx.focus();if(nx.select)nx.select()}
 }
-const FORM_ORDER={s:['date','amt','von','nach','info'],f:['date','amt','von','nach','info'],m:['date','amt','von','nach','info'],t:['fz','date','p','ppl','km','konto']};
+const DO=['dy','dm','dd'];
+const FORM_ORDER={s:[...DO,'amt','von','nach','info'],f:[...DO,'amt','von','nach','info'],m:[...DO,'amt','von','nach','info'],t:['fz',...DO,'p','ppl','km','konto']};
 function submitForm(f){if(f.requestSubmit)f.requestSubmit();else f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))}
 function eKey(ev){
   const t=ev.target,f=t.form;if(!f||!t.id||!/^(f|m|t|s|u)-/.test(t.id))return;
@@ -503,16 +528,14 @@ function eKey(ev){
     if(ev.key==='Enter'&&AC.idx>=0){ev.preventDefault();ev.stopPropagation();acPick(AC.items[AC.idx]);return}
     if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();acHide();return}
   }else if(t.dataset.ac&&(ev.key==='ArrowDown')){ev.preventDefault();acShow(t);return}
-  if(t.classList.contains('dt')&&(ev.key==='ArrowUp'||ev.key==='ArrowDown')){
-    ev.preventDefault();const cur=parseDateIn(t.value,t.dataset.iso||today())||t.dataset.iso;setDate(p,isoAdd(cur,(ev.key==='ArrowUp'?1:-1)*(ev.shiftKey?7:1)));updPrev(p);return;
-  }
+  if(t.classList.contains('dp')&&(ev.key==='ArrowUp'||ev.key==='ArrowDown')){ev.preventDefault();stepDate(t.dataset.p,t.dataset.u,(ev.key==='ArrowUp'?1:-1)*(ev.shiftKey&&t.dataset.u==='d'?7:1));return}
   if(ev.key!=='Enter'||ev.isComposing)return;
   if(ev.ctrlKey||ev.metaKey){ev.preventDefault();submitForm(f);return}
   const order=FORM_ORDER[p];if(!order)return;
   const i=order.indexOf(field);if(i<0)return;
   if(i<order.length-1){
     ev.preventDefault();
-    if(t.classList.contains('dt')){if(!getDate(p)){toast('Datum nicht erkannt (z. B. 5.3. oder +1)');return}updPrev(p)}
+    if(t.classList.contains('dp')&&field==='dd'){if(!getDate(p)){toast('Datum unvollständig oder ungültig');return}updPrev(p)}
     const nx=$('#'+p+'-'+order[i+1]);if(nx){nx.focus();if(nx.select)nx.select()}
   }else{ev.preventDefault();submitForm(f)}
 }
@@ -525,7 +548,7 @@ V.buchungen=()=>{
   <div class="row2"><div class="field"><label for="b-cat">Kategorie</label><select id="b-cat"><option value="">alle</option>${cats.map(c=>`<option ${c===f.cat?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
   <div class="field"><label>&nbsp;</label><label style="display:flex;gap:8px;align-items:center;min-height:42px;font-size:14px;color:var(--ink)"><input type="checkbox" id="b-st" ${f.st?'checked':''}> nur Steuer-relevante</label></div></div>
   <div class="row2"><div class="field"><label for="b-from">Von Datum</label><input type="date" id="b-from" value="${esc(f.from)}"></div><div class="field"><label for="b-to">Bis Datum</label><input type="date" id="b-to" value="${esc(f.to)}"></div></div>
-  <div class="bar-nav"><span class="small muted" id="b-info"></span><button class="btn sm" data-act="bReset">Filter zurücksetzen</button></div></div>
+  <div class="bar-nav"><span class="small muted" id="b-info"></span><button class="btn sm" data-act="chk">🔍 Prüfen</button><button class="btn sm" data-act="bReset">Filter zurücksetzen</button></div></div>
   <div class="card flat"><div class="list" id="blist"></div></div>`;
 };
 AFTER.buchungen=fillBuchungen;
@@ -850,6 +873,68 @@ function defVon(){let l='';try{l=localStorage.getItem('hb-von')}catch(x){}const 
 function modalNewEntry(over){openModal(`<h2>Neuer Eintrag</h2><form data-form="entryNew" style="display:flex;flex-direction:column;gap:12px">${entryFields('m',Object.assign({d:today(),v:defVon(),k:'Andere'},over||{}))}${btnRow()}</form>`)}
 function modalVehicle(){openModal(`<h2>Neues Fahrzeug</h2><form data-form="vehNew" style="display:flex;flex-direction:column;gap:12px">${fld('ve-n','Name (z. B. VW Golf 2018)','','required')}${sel('ve-typ','Art',['Auto','Motorrad'],'Auto')}${fld('ve-t','Tankvolumen in Litern','','inputmode="numeric"')}${btnRow()}</form>`)}
 
+/* ---------- Prüfen: Doppelbuchungen, ähnliche Schreibweisen, Auffälliges ---------- */
+const normN=s=>lc(s).replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ß/g,'ss').replace(/[^a-z0-9]/g,'');
+function lev(a,b){if(a===b)return 0;if(Math.abs(a.length-b.length)>2)return 9;let p=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){const c=[i];for(let j=1;j<=b.length;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[b.length]}
+function simNorm(x,y){if(!x||!y)return false;if(x===y)return true;const m=Math.min(x.length,y.length);return m>=4&&Math.abs(x.length-y.length)<=2&&lev(x,y)<=(m>=9?2:1)}
+function simName(a,b){return simNorm(normN(a),normN(b))}
+const ignSet=()=>new Set(CFG().ign||[]);
+function runChecks(){
+  const ign=ignSet(),asc=S.asc.filter(e=>typOf(e)!=='int');
+  const dups=[],byAmt=new Map(),habit=new Map();
+  for(const e of asc){const k=normN(e.v)+'|'+normN(e.n)+'|'+Math.round(e.b*100);habit.set(k,(habit.get(k)||0)+1)}
+  for(const e of asc){const k=Math.round(e.b*100);(byAmt.get(k)||byAmt.set(k,[]).get(k)).push(e)}
+  const dayN=d=>Date.UTC(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10))/864e5;
+  byAmt.forEach(l=>{
+    for(let i=0;i<l.length;i++)for(let j=i+1;j<l.length;j++){
+      const a=l[i],b=l[j];if(Math.abs(dayN(a.d)-dayN(b.d))>3)continue;
+      if(a.i.startsWith('r_')&&b.i.startsWith('r_'))continue;
+      if(!(simName(a.v,b.v)&&simName(a.n,b.n)))continue;
+      // Gewohnheitsbuchungen (gleicher Betrag/Konto/Empfänger oft vorhanden, z. B. Nachhilfe 15 €) sind keine Doppelbuchungen
+      if(normN(a.n)===normN(b.n)&&normN(a.v)===normN(b.v)&&(habit.get(normN(a.v)+'|'+normN(a.n)+'|'+Math.round(a.b*100))||0)>=4)continue;
+      const key='d:'+[a.i,b.i].sort().join('|');if(ign.has(key))continue;dups.push({a,b,key})
+    }});
+  dups.sort((x,y)=>(y.a.d>x.a.d?1:-1));
+  // ähnliche Namen
+  const cnt=new Map();for(const e of S.asc){for(const n of [e.v,e.n]){if(n&&!isKonto(n))cnt.set(n,(cnt.get(n)||0)+1)}}
+  const names=[...cnt.keys()],nn=names.map(normN),sims=[],seen=new Set();
+  for(let i=0;i<names.length;i++)for(let j=i+1;j<names.length;j++){
+    const a=names[i],b=names[j];if(!simNorm(nn[i],nn[j]))continue;
+    const [hi,lo]=cnt.get(a)>=cnt.get(b)?[a,b]:[b,a];const key='n:'+[normN(a),normN(b)].sort().join('|');
+    if(ign.has(key)||seen.has(lo))continue;seen.add(lo);sims.push({from:lo,to:hi,nf:cnt.get(lo),nt:cnt.get(hi),key});
+  }
+  sims.sort((x,y)=>y.nf+y.nt-x.nf-x.nt);
+  // auffällige Buchungen
+  const outs=[],grp=new Map(),t=today();
+  for(const e of asc){if(e.i.startsWith('r_'))continue;const k=lc(e.n);(grp.get(k)||grp.set(k,[]).get(k)).push(e)}
+  grp.forEach(l=>{
+    if(l.length<5)return;const v=l.map(e=>e.b).sort((a,b)=>a-b),med=v[Math.floor(v.length/2)];
+    for(const e of l){if(e.b>3*med&&e.b-med>=20&&!ign.has('o:'+e.i))outs.push({e,why:'sonst um '+eur(med)+' bei „'+e.n+'“',key:'o:'+e.i})}
+  });
+  for(const e of asc){
+    if(ign.has('o:'+e.i)||outs.some(o=>o.e===e))continue;
+    if(e.b<=0)outs.push({e,why:'Betrag '+(e.b===0?'ist 0':'ist negativ'),key:'o:'+e.i});
+    else if(e.d>isoAdd(t,60))outs.push({e,why:'Datum liegt weit in der Zukunft',key:'o:'+e.i});
+  }
+  outs.sort((x,y)=>y.e.d>x.e.d?1:-1);
+  return{dups:dups.slice(0,40),sims:sims.slice(0,40),outs:outs.slice(0,40)};
+}
+const chkRow=e=>`<div class="small" style="padding:4px 0">${pd(e.d)} · <b>${esc(e.v)} → ${esc(e.n)}</b> · ${eur(e.b)}${e.t?' · '+esc(e.t):''}</div>`;
+function modalCheck(){
+  const r=runChecks();let h='<h2>Auffälligkeiten prüfen</h2><div class="small muted">Nur Hinweise. Es wird nichts automatisch geändert. „Passt so“ blendet einen Hinweis dauerhaft aus.</div>';
+  h+=`<h3>Mögliche Doppelbuchungen (${r.dups.length})</h3>`+(r.dups.map(x=>`<div class="card" style="padding:10px">${chkRow(x.a)}${chkRow(x.b)}<div class="btns"><button class="btn sm dng" data-act="chkDel" data-id="${esc(x.b.i)}">Zweite löschen</button><button class="btn sm" data-act="chkDel" data-id="${esc(x.a.i)}">Erste löschen</button><button class="btn sm" data-act="chkOk" data-k="${esc(x.key)}">Passt so</button></div></div>`).join('')||'<div class="small muted">Keine gefunden.</div>');
+  h+=`<h3>Ähnlich geschriebene Namen (${r.sims.length})</h3>`+(r.sims.map(x=>`<div class="card" style="padding:10px"><div class="small"><b>${esc(x.from)}</b> (${x.nf}×) ≈ <b>${esc(x.to)}</b> (${x.nt}×)</div><div class="btns" style="margin-top:6px"><button class="btn sm pri" data-act="chkMerge" data-f="${esc(x.from)}" data-t="${esc(x.to)}">Alle zu „${esc(x.to)}“</button><button class="btn sm" data-act="chkMerge" data-f="${esc(x.to)}" data-t="${esc(x.from)}">Alle zu „${esc(x.from)}“</button><button class="btn sm" data-act="chkOk" data-k="${esc(x.key)}">Passt so</button></div></div>`).join('')||'<div class="small muted">Keine gefunden.</div>');
+  h+=`<h3>Auffällige Buchungen (${r.outs.length})</h3>`+(r.outs.map(x=>`<div class="card" style="padding:10px">${chkRow(x.e)}<div class="small muted">${esc(x.why)}</div><div class="btns" style="margin-top:6px"><button class="btn sm" data-act="chkEdit" data-id="${esc(x.e.i)}">Bearbeiten</button><button class="btn sm" data-act="chkOk" data-k="${esc(x.key)}">Passt so</button></div></div>`).join('')||'<div class="small muted">Keine gefunden.</div>');
+  h+='<div class="btns" style="margin-top:12px"><button class="btn ghost" data-act="close">Schließen</button></div>';
+  openModal(h);
+}
+function mergeNames(from,to){
+  const o=lc(from),keys=new Set();let n=0;
+  S.months.forEach((arr,key)=>{let ch=false;arr.forEach(e=>{if(lc(e.v)===o){e.v=to;ch=true;n++}if(lc(e.n)===o){e.n=to;ch=true;n++}});if(ch)keys.add(key)});
+  let rc=false;CFG().regeln.forEach(r=>{if(lc(r.n)===o){r.n=to;rc=true}});if(rc)saveCfg();
+  keys.forEach(saveMonth);rebuild();refresh();return n;
+}
+
 /* ---------- PDF / CSV ---------- */
 async function saveFile(name,data){
   if(!window.claude)return HBX.saveFile(name,data,toast);
@@ -909,7 +994,13 @@ const A={
   emode:t=>{S.emode=t.dataset.v;render()},
   rmode:t=>{S.rmode=t.dataset.v;fillEintragen()},
   undo:t=>undoEntry(t.dataset.id),
-  dstep:t=>{const p=t.dataset.p,i=$('#'+p+'-date');const cur=parseDateIn(i.value,i.dataset.iso||today())||i.dataset.iso;setDate(p,isoAdd(cur,+t.dataset.n));updPrev(p)},
+  chk:()=>modalCheck(),
+  chkOk:t=>{const c=CFG();c.ign=(c.ign||[]).concat(t.dataset.k);saveCfg();modalCheck()},
+  chkDel:t=>{removeEntry(t.dataset.id);toast('Gelöscht');modalCheck()},
+  chkMerge:t=>{const n=mergeNames(t.dataset.f,t.dataset.t);toast(n+' Einträge zu „'+t.dataset.t+'“ vereinheitlicht');modalCheck()},
+  chkEdit:t=>modalEntry(t.dataset.id),
+  dstep:t=>stepDate(t.dataset.p,t.dataset.u,+t.dataset.n),
+  dtoday:t=>{setDate(t.dataset.p,today());updPrev(t.dataset.p);if(t.dataset.p==='s')serPrev()},
   entryDel:t=>{if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich löschen?';return}removeEntry($('[data-form=entryEdit]').dataset.id);closeModal();toast('Buchung gelöscht')},
   bMore:()=>{S.bf.lim+=150;fillBuchungen()},
   bReset:()=>{S.bf={from:'',to:'',q:'',konto:'',cat:'',st:false,lim:150};render()},
@@ -970,7 +1061,7 @@ const FORMS={
   tf:()=>{
     const v=vehicles().find(x=>x.id===$('#t-fz').value),d=getDate('t'),p=parseNum($('#t-p').value),ppl=parseNum($('#t-ppl').value),km=parseNum($('#t-km').value),konto=$('#t-konto').value;
     if(!v){toast('Bitte ein Fahrzeug wählen');return}
-    if(!d){toast('Datum nicht erkannt (z. B. 5.3. oder +1)');return}
+    if(!d){toast('Datum unvollständig oder ungültig');return}
     if(isNaN(p)||p<=0||isNaN(ppl)||ppl<=0){toast('Bitte Gesamtbetrag und Literpreis angeben');return}
     if(!konto){toast('Bitte ein Konto wählen');return}
     const o={d,ppl:Math.round(ppl*1000)/1000,p:Math.round(p*100)/100,km:isNaN(km)?null:Math.round(km)};
@@ -1043,8 +1134,8 @@ document.addEventListener('change',ev=>{
   const t=ev.target;
   if(t.id==='f-nach'||t.id==='m-nach')fillFromKnown(t.dataset.p);
   if(t.id==='f-von'||t.id==='m-von'){const p=t.id[0];if(isKonto($('#'+p+'-nach').value))fillFromKnown(p)}
-  if(t.classList&&t.classList.contains('dt')){const p=t.id.split('-')[0];if(!getDate(p)){toast('Datum nicht erkannt (z. B. 5.3. oder +1)');setDate(p,t.dataset.iso||today())}updPrev(p)}
-  if(t.id==='s-iv'||(t.classList&&t.classList.contains('dt')&&(t.id==='s-date'||t.id==='u-date')))setTimeout(serPrev,0);
+  if(t.classList&&t.classList.contains('dp')){const p=t.dataset.p;if(!getDate(p)){toast('Datum unvollständig oder ungültig');const c=$('#'+p+'-date');if(c.dataset.iso)setDate(p,c.dataset.iso,true)}updPrev(p);if(p==='s'||p==='u')serPrev()}
+  if(t.id==='s-iv')setTimeout(serPrev,0);
   if(t.id==='t-fz'){const l=Math.max(0,...(S.sprit.get(t.value)||[]).map(x=>x.km||0));$('#t-km').placeholder=l?String(l):''}
   if(t.id==='sy'){S.sy=+t.value;render()}
   if(t.id==='sv-v'){S.sv.id=t.value;render()}
@@ -1054,14 +1145,20 @@ document.addEventListener('change',ev=>{
 document.addEventListener('input',ev=>{
   const t=ev.target;
   if(t.dataset&&t.dataset.ac){acShow(t)}
-  if(/^[fms]-(date|amt|von|nach)$/.test(t.id))updPrev(t.id[0]);if(/^[su]-(date|amt)$/.test(t.id))serPrev();
+  if(t.classList&&t.classList.contains('dp')){
+    const p=t.dataset.p,u=t.dataset.u,v=t.value.replace(/\D/g,'');if(v!==t.value)t.value=v;
+    const iso=readDate(p);if(iso){$('#'+p+'-date').dataset.iso=iso;if('fts'.includes(p))remember(iso)}
+    updPrev(p);if(p==='s'||p==='u')serPrev();
+    if(ev.inputType&&ev.inputType.startsWith('insert')){const nx=(u==='y'&&v.length>=4)?'m':(u==='m'&&(v.length>=2||+v>1))?'d':'';if(nx){const n=$('#'+p+'-d'+nx);n.focus();n.select()}}
+  }
+  if(/^[fms]-(amt|von|nach)$/.test(t.id))updPrev(t.id[0]);if(/^[su]-amt$/.test(t.id))serPrev();
   if(t.id==='t-p'||t.id==='t-ppl')tankPrev();
   if(t.id==='b-q'){S.bf.q=t.value;S.bf.lim=150;fillBuchungen()}
   if(t.id==='ab-ist'){const k=$('[data-form=abgleich]');if(!k)return;const ist=parseNum(t.value),soll=balances()[lc(k.dataset.n)];$('#ab-diff').textContent=isNaN(ist)?'':'Differenz: '+sgn(ist-soll,true)}
 });
 document.addEventListener('keydown',ev=>{if(ev.defaultPrevented)return;if(ev.key==='Escape'&&!acOpen()){closeModal();return}eKey(ev)},true);
 document.addEventListener('mousedown',ev=>{const a=ev.target.closest&&ev.target.closest('.aci');if(a){ev.preventDefault();acPick(a.dataset.v)}});
-document.addEventListener('focusin',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('dt')&&t.select)setTimeout(()=>t.select(),0);if(t.dataset&&t.dataset.ac)acShow(t)});
+document.addEventListener('focusin',ev=>{const t=ev.target;if(t.classList&&t.classList.contains('dp')&&t.select)setTimeout(()=>t.select(),0);if(t.dataset&&t.dataset.ac)acShow(t)});
 document.addEventListener('focusout',ev=>{const i=ev.target;if(i.dataset&&i.dataset.ac)setTimeout(()=>{if(document.activeElement===i)return;const b=i.parentNode.querySelector('.ac');if(b)b.hidden=true;if(AC.inp===i){AC.idx=-1;AC.items=[]}},120)});
 document.addEventListener('focusout',()=>{setTimeout(()=>{if(S.pending&&!$('#modal.open')&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#main')&&/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName))){refresh()}},150)});
 window.addEventListener('hashchange',route);
