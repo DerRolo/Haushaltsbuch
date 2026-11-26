@@ -1,0 +1,353 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0E6B5B"><title>Krypto-Buch</title><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0}body{font:14px/1.45 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}
+
+/* Layout: schmale Spalte (max 760px), Kopfzeile mit Vermögen, Tab-Leiste unten am Handy / oben am PC, Formulare als Bottom-Sheet */
+:root{
+  --bg:#F2F4F3; --surface:#FFFFFF; --ink:#15201C; --muted:#5E6B66; --line:#DCE2DF;
+  --accent:#0E6B5B; --accent-ink:#FFFFFF; --soft:#E4EEEB; --pos:#16794A; --neg:#B23A2E; --warn:#9A6A12;
+  --c1:#0E6B5B; --c2:#2F5FA8; --c3:#B7791F; --c4:#8A4F9E; --scrim:rgba(10,20,16,.45);
+  --f-head:'Space Grotesk',system-ui,sans-serif; --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1412; --surface:#171E1B; --ink:#E5ECE8; --muted:#97A39E; --line:#2A3430;
+  --accent:#4DBFA3; --accent-ink:#0B1411; --soft:#1F2C28; --pos:#5CCB93; --neg:#F0877B; --warn:#E0B05A;
+  --c1:#4DBFA3; --c2:#7FA6E8; --c3:#E0B05A; --c4:#C79AD8; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1412; --surface:#171E1B; --ink:#E5ECE8; --muted:#97A39E; --line:#2A3430;
+  --accent:#4DBFA3; --accent-ink:#0B1411; --soft:#1F2C28; --pos:#5CCB93; --neg:#F0877B; --warn:#E0B05A;
+  --c1:#4DBFA3; --c2:#7FA6E8; --c3:#E0B05A; --c4:#C79AD8; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 84px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+#app{max-width:760px;margin:0 auto}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:14px 0 10px;border-bottom:1px solid var(--line)}
+header.top h1{font:700 20px/1.1 var(--f-head);margin:0;letter-spacing:-.01em}
+header.top .sum{font:500 12px var(--f-body);color:var(--muted);margin-top:3px}
+header.top .sum b{font-family:var(--f-head);font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.sync{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--pos);display:inline-block}
+.sync.wait i{background:var(--warn)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);display:flex;overflow-x:auto;padding:0 max(8px,env(safe-area-inset-left,0px)) env(safe-area-inset-bottom,0px) max(8px,env(safe-area-inset-right,0px));scrollbar-width:none}
+nav.tabs button{flex:1 0 auto;min-width:76px;border:0;background:none;padding:13px 10px;font-weight:500;color:var(--muted);border-top:2px solid transparent;white-space:nowrap}
+nav.tabs button.on{color:var(--accent);border-top-color:var(--accent)}
+@media (min-width:860px){
+  nav.tabs{position:static;border:0;border-bottom:1px solid var(--line);background:none;padding:0;margin:0 auto;max-width:760px}
+  nav.tabs button{border-top:0;border-bottom:2px solid transparent;margin-bottom:-1px}
+  nav.tabs button.on{border-bottom-color:var(--accent)}
+  body{padding-block:0 40px}
+}
+main{padding:16px 0 8px;display:flex;flex-direction:column;gap:16px}
+h2{font:700 16px/1.2 var(--f-head);margin:0}
+h3{font:600 12px/1.2 var(--f-body);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card.flat{padding:0;gap:0;overflow:hidden}
+.muted{color:var(--muted)} .small{font-size:12px}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.big{font:700 24px/1.1 var(--f-head);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:12px;color:var(--muted);font-weight:500}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 11px;width:100%;min-width:0;min-height:42px}
+input[type=checkbox]{width:auto;min-height:0}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.amt-in{font:700 22px var(--f-head);font-variant-numeric:tabular-nums}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.row2.keep{grid-template-columns:1fr 1fr}}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 14px;font-weight:600;min-height:42px}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.dng{color:var(--neg)}
+.btn.sm{padding:6px 10px;min-height:32px;font-size:12px}
+.btn.ghost{background:none}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 11px;font-size:13px;min-height:32px}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip.tpl{background:var(--surface);text-align:left;line-height:1.2}
+.chip.tpl small{display:block;color:var(--muted);font-size:11px}
+.grp{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 -2px}
+.list{display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 14px;min-width:0}
+.list>.row:first-child{border-top:0}
+.row .d{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.row .mid{min-width:0;display:flex;flex-direction:column}
+.row .mid b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .mid small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .amt{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kv{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left}
+.list>.kv:first-child{border-top:0}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--soft);color:var(--ink);margin-right:4px}
+.tag.st{background:var(--accent);color:var(--accent-ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);flex-wrap:wrap}
+.seg button{border:0;background:none;padding:7px 12px;font-weight:500;color:var(--muted)}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.bar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th,td{padding:7px 10px;text-align:right;border-top:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;border-top:0}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--soft)}
+tfoot td{font-weight:700}
+.bar-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.banner{background:var(--soft);border:1px solid var(--accent);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.empty{padding:22px 14px;text-align:center;color:var(--muted)}
+#modal{position:fixed;inset:0;z-index:40;background:var(--scrim);display:none;align-items:flex-end;justify-content:center}
+#modal.open{display:flex}
+#modal .sheet{background:var(--surface);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:14px 14px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+@media (min-width:700px){#modal{align-items:center}#modal .sheet{border-radius:14px}}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;z-index:50;font-weight:500;max-width:90%;display:none}
+#toast.on{display:block}
+#toast .tbtn{background:none;border:0;color:inherit;text-decoration:underline;font-weight:700;margin-left:14px;padding:4px 2px;cursor:pointer}
+.dtrow{display:flex;gap:4px;align-items:stretch}.dtrow input{flex:1;min-width:0;text-align:center;padding-left:2px;padding-right:2px;font-size:14px}.dtrow .btn{min-width:28px;padding:0 4px;min-height:0;font-size:16px}
+.dt3{display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:6px}.dcol{display:flex;gap:2px;align-items:stretch;min-width:0}.dcol input{flex:1;min-width:0;width:100%;text-align:center;padding:0 2px;font-size:15px}.dcol .btn{min-width:26px;padding:0 3px;min-height:38px;font-size:17px;line-height:1}
+.lnk{background:none;border:0;color:var(--accent);font-size:12px;font-weight:600;padding:0 0 0 6px;text-decoration:underline}
+.acw{position:relative}
+.ac{position:absolute;left:0;right:0;top:100%;z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-top:2px;box-shadow:0 6px 18px rgba(0,0,0,.18);max-height:260px;overflow:auto}
+.aci{padding:9px 12px;font-size:14px;cursor:pointer}.aci.on{background:var(--accent);color:var(--accent-ink)}
+.rwrap{display:flex;align-items:center;border-top:1px solid var(--line)}.rwrap .row{border-top:0;flex:1;min-width:0}.rwrap .btn{margin-right:10px;flex:none}
+.hint{font-size:12px;color:var(--muted);min-height:16px}
+svg text{fill:var(--muted);font:10px var(--f-body)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+details{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--bg)}
+details[open]{display:flex;flex-direction:column;gap:10px}
+summary{cursor:pointer;font-weight:500}
+@media (prefers-reduced-motion:no-preference){.chip,.btn{transition:background .12s}}
+</style></head><body>
+<div id="app"><header class="top"><div><h1>Krypto</h1><div class="sum" id="hsum"></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="sync" id="sync"><i></i><span>lokal gespeichert</span></div><a class="btn sm ghost" href="index.html" style="text-decoration:none">‹ Haushalt</a></div></header><nav class="tabs" id="tabs"></nav><main id="main"></main></div><div id="toast"></div>
+<script src="ghk.js"></script>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur=n=>new Intl.NumberFormat('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.round(n*100)/100)+' €';
+const qty=n=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:8}).format(n);
+const num=s=>{s=String(s==null?'':s).trim().replace(/\s/g,'').replace('€','');if(!s)return NaN;if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');const v=parseFloat(s);return isFinite(v)?v:NaN};
+const ns=n=>(n==null||isNaN(n))?'':String(n).replace('.',',');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const TYPES={kauf:'Kauf',verkauf:'Verkauf',tausch:'Tausch',transfer:'Transfer',gebuehr:'Gebühr (Coin-Abzug, Gas)',reward:'Reward / Staking',bestand:'Bestand / Korrektur-Zugang',verlust:'Verlust (Hack, tot)',ein:'Einzahlung €',aus:'Auszahlung €'};
+const WST={aktiv:'Aktiv',archiv:'Archiviert',tot:'Tot',gehackt:'Gehackt',infiltriert:'Infiltriert'};
+const BAD=['tot','gehackt','infiltriert'];
+const CM={eur:'Nach Euro-Einsatz (mein € von Gesamt)',pct:'Feste Prozent',coin:'Feste Coin-Menge',nur:'Nur für Claus',offen:'Anteil offen (klären)'};
+const F={kauf:'as,b,bs,w',verkauf:'a,as,bs,w',tausch:'a,as,b,bs,eur,w',transfer:'a,as,w,w2',gebuehr:'w',reward:'b,bs,eur,w',bestand:'b,bs,eur,w',verlust:'a,as,w',ein:'as,w',aus:'as,w'};
+let S={wallets:[],tx:[],cfg:{meth:'FIFO',scope:'wallet',heal:true,price:{}}};
+const K='krypto-v1',KB=window.KBX||null;let db=null,own=0,ready=true,LAST={},GS=null,CFGD=null,ORD=null;const got={};
+function loadLocal(){try{const j=localStorage.getItem(K);if(j)S=Object.assign(S,JSON.parse(j))}catch(e){}}
+function docsOf(){const by={},D={'config/main':{wallets:S.wallets,cfg:S.cfg}};for(const t of S.tx){const y=t.d.slice(0,4);(by[y]=by[y]||[]).push(t)}
+  for(const y in by)D['orders/'+y]={e:sortD(by[y])};for(const p in LAST)if(p.startsWith('orders/')&&!(p in D))D[p]={e:[]};return D}
+function save(){if(!db){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}return}
+  if(!ready)return;const D=docsOf();own++;try{for(const p in D){const j=JSON.stringify(D[p]);if(LAST[p]!==j){LAST[p]=j;db.doc(p).set(D[p])}}}finally{own--}}
+function apply(){if(!got.c||!got.o)return;
+  if(!CFGD.exists&&!ORD.docs.length){ready=true;if(S.tx.length||S.wallets.length)save();render();return}
+  const c=CFGD.exists?CFGD.data():{};S.wallets=c.wallets||[];S.cfg=Object.assign({meth:'FIFO',scope:'wallet',heal:true,price:{}},c.cfg||{});if(!S.cfg.price)S.cfg.price={};
+  S.tx=[];ORD.docs.forEach(d=>{const x=d.data();if(x&&x.e)S.tx.push(...x.e)});
+  LAST={};const D=docsOf();for(const p in D)LAST[p]=JSON.stringify(D[p]);ORD.docs.forEach(d=>{if(!(('orders/'+d.id) in D))LAST['orders/'+d.id]=JSON.stringify({e:[]})});
+  ready=true;if(!E&&!W)render()}
+function onStatus(x){const ok=x.state==='ok'||x.state==='busy',e=$('#sync');if(e){e.className='sync'+(ok?'':' wait');e.querySelector('span').textContent=x.msg||''}GS=x;const g=$('#ghstate');if(g)g.textContent=x.msg||''}
+function start(){loadLocal();const c=KB&&KB.ghLoad();
+  if(c){ready=false;db=KB.ghMake(c,onStatus);
+    db.doc('config/main').onSnapshot(d=>{if(own)return;CFGD=d;got.c=1;apply()});
+    db.collection('orders').onSnapshot(c2=>{if(own)return;ORD=c2;got.o=1;apply()});db.startSync()}
+  render()}
+function saveF(n,t){if(KB)KB.saveFile(n,t,toast);else{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t]));a.download=n;a.click()}}
+const sortD=a=>a.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:0);
+/* ---------- Beteiligung (Claus) ---------- */
+function share(t){const c=t.cl;if(!c)return 1;const m=(t.t==='verkauf'||t.t==='verlust')?t.as:t.bs;
+  if(c.m==='pct')return Math.min(1,(c.v||0)/100);
+  if(c.m==='eur')return t.eur>0?Math.min(1,(c.v||0)/t.eur):0;
+  if(c.m==='coin')return m>0?Math.min(1,(c.v||0)/m):0;
+  return 0}
+/* ---------- Steuer-Engine: walletbezogen, FIFO oder LIFO ---------- */
+const addY=d=>(+d.slice(0,4)+1)+d.slice(4,10);
+function calc(meth){
+  const lots=new Map(),R={disp:[],inc:[],loss:[],fees:[],open:[],miss:[],auto:[],cash:[0,0]};
+  const key=(w,c)=>(S.cfg.scope==='all'?'*':w)+'|'+c;
+  const add=(w,c,d,s,uc)=>{if(!(s>0)||!c||c==='€')return;const k=key(w,c);if(!lots.has(k))lots.set(k,[]);lots.get(k).push({d,s,uc});sortD(lots.get(k))};
+  const take=(w,c,s,t)=>{const a=lots.get(key(w,c))||[],out=[];let r=s;
+    while(r>1e-12){const l=meth==='LIFO'?a[a.length-1]:a[0];if(!l)break;const u=Math.min(l.s,r);out.push({d:l.d,s:u,cost:u*l.uc,uc:l.uc});l.s-=u;r-=u;if(l.s<=1e-12)meth==='LIFO'?a.pop():a.shift()}
+    if(r>1e-9&&S.cfg.heal&&S.cfg.scope!=='all'){const own=key(w,c),L=a2=>meth==='LIFO'?a2[a2.length-1]:a2[0];
+      const srcs=[...lots.entries()].filter(([k,a2])=>k!==own&&k.endsWith('|'+c)&&a2.length&&!BAD.includes((S.wallets.find(x=>x.id===k.slice(0,-c.length-1))||{}).st)).sort((x,y)=>meth==='LIFO'?(L(y[1]).d<L(x[1]).d?-1:1):(L(x[1]).d<L(y[1]).d?-1:1));
+      for(const [k,a2] of srcs){while(r>1e-12&&a2.length){const l=L(a2),u=Math.min(l.s,r);out.push({d:l.d,s:u,cost:u*l.uc,uc:l.uc});R.auto.push({d:t.d,c,s:u,from:k.slice(0,-c.length-1),to:w,i:t.i});l.s-=u;r-=u;if(l.s<=1e-12)meth==='LIFO'?a2.pop():a2.shift()}if(r<=1e-12)break}}
+    if(r>1e-9){R.miss.push({i:t.i,d:t.d,c,s:r,w});out.push({d:t.d,s:r,cost:0,uc:0,miss:1})}return out};
+  const sell=(t,w,c,s,pr,ty)=>{for(const p of take(w,c,s,t)){const x=pr*p.s/s;R.disp.push({i:t.i,d:t.d,c,s:p.s,acq:p.d,pr:x,cost:p.cost,g:x-p.cost,tax:!!p.miss||t.d.slice(0,10)<=addY(p.d),ty,miss:!!p.miss})}};
+  const fe0=(t,f)=>(t.fe||0)*f;
+  const fee=(t,f,w)=>{const fe=(t.fe||0)*f,fs=(t.fs||0)*f;if(!(fe>0)&&!(fs>0))return 0;R.fees.push({d:t.d,eur:fe,c:t.fc,s:fs,i:t.i});if(t.fc&&t.fc!=='€'&&fs>0)sell(t,w,t.fc,fs,fe,'gebuehr');return fe};
+  for(const t of sortD([...S.tx])){const f=share(t);if(t.cl&&t.cl.m==='offen')R.open.push(t);if(f<=0)continue;
+    const as=(t.as||0)*f,bs=(t.bs||0)*f,ev=(t.eur||0)*f,w=t.w||'?';
+    if(t.t==='ein'){R.cash[0]+=as;fee(t,f,w)}
+    else if(t.t==='aus'){R.cash[1]+=as;fee(t,f,w)}
+    else if(t.t==='gebuehr')fee(t,f,w);
+    else if(t.t==='bestand')add(w,t.b,t.d,bs,ev/bs);
+    else if(t.t==='kauf'){const fe=fe0(t,f);add(w,t.b,t.d,bs,(ev+fe)/bs);fee(t,f,w)}
+    else if(t.t==='verkauf'){const fe=fe0(t,f);sell(t,w,t.a,as,ev-fe,'verkauf');fee(t,f,w)}
+    else if(t.t==='tausch'){const fe=fe0(t,f);sell(t,w,t.a,as,ev-fe,'tausch');add(w,t.b,t.d,bs,ev/bs);fee(t,f,w)}
+    else if(t.t==='transfer'){for(const p of take(w,t.a,as,t))add(t.w2||'?',t.a,p.d,p.s,p.uc);fee(t,f,w)}
+    else if(t.t==='reward'){add(w,t.b,t.d,bs,ev/bs);R.inc.push({d:t.d,c:t.b,s:bs,eur:ev,i:t.i});fee(t,f,w)}
+    else if(t.t==='verlust'){const ps=take(w,t.a,as,t);R.loss.push({d:t.d,c:t.a,s:as,cost:ps.reduce((a,p)=>a+p.cost,0),i:t.i})}}
+  R.lots=lots;return R}
+function holdings(R){const h={},bad={},arch={};R.lots.forEach((a,k)=>{const [w,c]=k.split('|');const wl=S.wallets.find(x=>x.id===w);const b=wl&&BAD.includes(wl.st),ar=wl&&wl.st==='archiv';
+  for(const l of a){if(l.s<1e-12)continue;if(b){bad[c]=(bad[c]||0)+l.s}else if(ar){const o=arch[c]||(arch[c]={c,s:0,cost:0});o.s+=l.s;o.cost+=l.s*l.uc}else{const o=h[c]||(h[c]={c,s:0,cost:0});o.s+=l.s;o.cost+=l.s*l.uc}}});
+  return{ok:Object.values(h).sort((x,y)=>y.cost-x.cost),bad,arch:Object.values(arch).sort((x,y)=>y.cost-x.cost)}}
+/* ---------- Binance-Import (Spot Trade History) ---------- */
+const QU=['USDT','BUSD','USDC','FDUSD','TUSD','EUR','BTC','ETH','BNB','TRY','USD'];
+function csvRows(t){const R=[];let r=[],f='',q=false;const end=()=>{r.push(f);f='';if(r.some(x=>x!==''))R.push(r);r=[]};
+  for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){r.push(f);f=''}else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;end()}else f+=c}
+  end();return R}
+const cut=(s,c)=>{s=String(s).trim();return s.endsWith(c)?parseFloat(s.slice(0,-c.length)):NaN};
+function parseBinance(text){const rows=csvRows(text.replace(/^\ufeff/,'')),H=rows[0]||[];
+  if(!(H.includes('Order No')&&H.includes('Fee')&&H.includes('Executed')))return{err:H.includes('OrderNo')?'Das ist die Order History ohne Gebühren. Bitte die Spot Trade History exportieren.':'Unbekanntes Format (erwartet: Binance Spot Trade History).'};
+  const ix=n=>H.indexOf(n),fills=[];
+  for(const r of rows.slice(1)){const pair=(r[ix('Pair')]||'').trim(),q=QU.slice().sort((a,b)=>b.length-a.length).find(x=>pair.endsWith(x)&&pair.length>x.length);
+    if(!q)return{err:'Handelspaar nicht erkannt: '+pair};
+    const base=pair.slice(0,-q.length),ex=cut(r[ix('Executed')],base),am=cut(r[ix('Amount')],q);
+    if(!(ex>0)||!(am>0))return{err:'Zeile nicht lesbar: '+r.join(',')};
+    const fx=r[ix('Fee')].trim(),fcand=[...new Set(['BNB',q,base,'BUSD','USDT'])].find(c=>fx.endsWith(c));
+    fills.push({no:r[ix('Order No')],t:r[ix('Time')].trim().replace(' ','T'),side:r[ix('Side')].toUpperCase(),base,q,ex,am,p:am/ex,fc:fcand||'?',fs:fcand?cut(fx,fcand):0})}
+  const ms=t=>Date.parse(t+'Z'),STB=['USDT','BUSD','USDC'];
+  const px=(c,t,d)=>{if(c==='EUR')return 1;if(d<0)return null;const T=ms(t),WIN=(STB.includes(c)?90:7)*864e5;
+    const cand=fills.filter(f=>(f.base===c||f.q===c)&&Math.abs(ms(f.t)-T)<=WIN).sort((a,b)=>Math.abs(ms(a.t)-T)-Math.abs(ms(b.t)-T)).slice(0,6);
+    for(const f of cand){const o=f.base===c?f.q:f.base,v=px(o,t,d-1);if(v!=null)return f.base===c?f.p*v:v/f.p}
+    if(d>0&&['USDT','BUSD','USDC'].includes(c))return px(c==='USDT'?'BUSD':'USDT',t,d-1);return null};
+  const by=new Map();for(const f of fills){if(!by.has(f.no))by.set(f.no,[]);by.get(f.no).push(f)}
+  const tx=[],st={orders:by.size,fills:fills.length,exact:0,est:0,miss:0,feeMiss:0,fees:{}};
+  for(const [no,L] of by){L.sort((a,b)=>a.t<b.t?-1:1);const f0=L[0],ex=L.reduce((a,x)=>a+x.ex,0),am=L.reduce((a,x)=>a+x.am,0),buy=f0.side==='BUY';
+    const t={t:'tausch',d:f0.t,src:'bn:'+no,note:'Binance Order '+no,est:0};
+    let a=buy?f0.q:f0.base,as=buy?am:ex,b=buy?f0.base:f0.q,bs=buy?ex:am,ev;
+    if(a==='EUR'){t.t='kauf';a='€';ev=as}else if(b==='EUR'){t.t='verkauf';b='€';ev=bs}
+    else{const v=px(a,f0.t,3),v2=v==null?px(b,f0.t,3):null;if(v!=null){ev=as*v;t.est=1}else if(v2!=null){ev=bs*v2;t.est=1}else{ev=0;t.est=2}}
+    Object.assign(t,{a,as,b,bs,eur:ev});
+    const fc=f0.fc,fs=L.filter(x=>x.fc===fc).reduce((a,x)=>a+x.fs,0);
+    if(fs>0){t.fc=fc;t.fs=fs;const v=fc==='EUR'?1:px(fc,f0.t,3);if(v!=null)t.fe=fs*v;else if(fc==='BNB'&&ev>0){t.fe=0.00075*ev;t.fest=1;st.feeEst=(st.feeEst||0)+1}else{t.fe=0;t.fest=2;st.feeMiss++}st.fees[fc]=(st.fees[fc]||0)+fs}
+    st[['exact','est','miss'][t.est]]++;tx.push(t)}
+  return{tx,st}}
+function applyImport(tx,w){const have=new Set(S.tx.map(x=>x.src).filter(Boolean));let n=0;for(const t of tx){if(have.has(t.src))continue;S.tx.push(Object.assign({i:uid()+(n++)},t,{w}))}save();return n}
+/*UI*/
+const VIEWS=[['uebersicht','Übersicht'],['buchen','Buchen'],['verlauf','Verlauf'],['wallets','Wallets'],['steuer','Steuer'],['mehr','Mehr']];
+let view='uebersicht',E=null,W=null,YR=null;const V={};
+const act=id=>{const w=S.wallets.find(x=>x.id===id);return !w||w.st!=='archiv'};
+const wname=id=>{const w=S.wallets.find(x=>x.id===id);return w?w.n:'?'};
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2600)}
+function go(v){view=v;render()}
+function render(){$('#tabs').innerHTML=VIEWS.map(([i,l])=>`<button class="${view===i?'on':''}" data-act="go" data-v="${i}">${l}</button>`).join('');
+  $('#main').innerHTML=V[view]();const R=calc(S.cfg.meth),h=holdings(R);$('#hsum').textContent=eur(h.ok.reduce((a,o)=>a+o.cost,0))+' Einstand · '+S.cfg.meth}
+const inp=(k,l,x='')=>`<div class="field"><label for="f-${k}">${l}</label><input id="f-${k}" value="${esc(E[k])}" autocomplete="off" ${x}></div>`;
+const wopts=sel=>S.wallets.filter(w=>w.st!=='archiv'||w.id===sel).map(w=>`<option value="${w.id}" ${w.id===sel?'selected':''}>${esc(w.n)}${BAD.includes(w.st)?' ('+WST[w.st]+')':''}</option>`).join('');
+const wsel=(k,l)=>`<div class="field"><label for="f-${k}">${l}</label><select id="f-${k}">${wopts(E[k])}</select></div>`;
+const LB={as:{kauf:'Bezahlt in €',verkauf:'Verkaufte Menge',tausch:'Menge von',transfer:'Menge',verlust:'Menge',ein:'Betrag €',aus:'Betrag €'},bs:{bestand:'Menge (Zugang)',kauf:'Erhaltene Menge',verkauf:'Erhalten in €',tausch:'Menge nach',reward:'Erhaltene Menge'}};
+function toE(t){return{i:t.i,t:t.t,d:t.d,a:t.a||'',as:ns(t.as),b:t.b||'',bs:ns(t.bs),eur:ns(t.eur),w:t.w||'',w2:t.w2||'',fc:t.fc||'',fs:ns(t.fs),fe:ns(t.fe),url:t.url||'',note:t.note||'',tag:t.tag||'',cm:t.cl?t.cl.m:'',cv:t.cl?ns(t.cl.v):''}}
+const newE=t=>({i:'',t:t||'kauf',d:new Date().toISOString().slice(0,16),a:'',as:'',b:'',bs:'',eur:'',w:(S.wallets.find(w=>w.st==='aktiv')||S.wallets[0]||{}).id||'',w2:'',fc:'BNB',fs:'',fe:'',url:'',note:'',tag:'',cm:'',cv:''});
+function collect(){if(!E)return;for(const k in E){const el=$('#f-'+k);if(el)E[k]=el.value}}
+V.buchen=()=>{if(!E)E=newE();const f=F[E.t].split(',');
+  if(!S.wallets.length)return`<div class="card"><h3>Erst ein Wallet anlegen</h3><div class="small muted">Jede Buchung gehört zu einem Wallet oder einer Börse (z. B. Binance).</div><div class="btns"><button class="btn pri" data-act="wNew">Wallet anlegen</button></div></div>`;
+  const coins=[...new Set(S.tx.flatMap(t=>[t.a,t.b]).filter(c=>c&&c!=='€'))];
+  let h=`<datalist id="dl-c">${coins.map(c=>`<option value="${esc(c)}">`).join('')}</datalist><div class="card"><h3>${E.i?'Buchung ändern':'Neue Buchung'}</h3>
+  <div class="chips">${Object.entries(TYPES).map(([k,l])=>`<button class="chip ${E.t===k?'on':''}" data-act="type" data-v="${k}">${l}</button>`).join('')}</div>
+  ${inp('d','Zeit (UTC, wie in der Börsen-Datei)','type="datetime-local"')}`;
+  if(f.includes('a'))h+=inp('a','Coin von','list="dl-c" style="text-transform:uppercase"');
+  if(f.includes('as'))h+=inp('as',(LB.as[E.t]||'Menge'),'inputmode="decimal"');
+  if(f.includes('b'))h+=inp('b',E.t==='tausch'?'Coin nach':'Coin','list="dl-c" style="text-transform:uppercase"');
+  if(f.includes('bs'))h+=inp('bs',(LB.bs[E.t]||'Menge'),'inputmode="decimal"');
+  if(f.includes('eur'))h+=inp('eur','Wert in € zum Zeitpunkt (Marktkurs)','inputmode="decimal"');
+  if(f.includes('w'))h+=wsel('w',E.t==='transfer'?'Von Wallet':'Wallet / Börse');
+  if(f.includes('w2'))h+=wsel('w2','Nach Wallet');
+  if(E.t!=='verlust')h+=`<div class="grp">Gebühr</div><div class="row2">${inp('fc','Gebühren-Coin','style="text-transform:uppercase"')}${inp('fs','Menge','inputmode="decimal"')}</div>${inp('fe','Gebühr in € (Wert zum Zeitpunkt)','inputmode="decimal"')}`;
+  h+=`${inp('tag','Tag (z. B. Staking, Bonus Reward)')}${inp('url','Beleg / Transaktions-Link (optional)')}${inp('note','Notiz (optional)')}
+  <details ${E.cm?'open':''}><summary>Mit Claus geteilt</summary><div class="field"><label for="f-cm">Beteiligung</label><select id="f-cm"><option value="">– nur ich –</option>${Object.entries(CM).map(([k,l])=>`<option value="${k}" ${E.cm===k?'selected':''}>${l}</option>`).join('')}</select></div>${inp('cv','Wert (€, % oder Coins je nach Modus)','inputmode="decimal"')}<div class="hint">Nur dein Anteil geht in Bestand und Steuer. „Offen“ zählt vorerst nicht.</div></details>
+  <div class="btns"><button class="btn pri" data-act="saveE">Speichern</button>${E.i?'<button class="btn dng" data-act="delE">Löschen</button>':''}<button class="btn ghost" data-act="cancelE">Neu</button></div></div>`;return h};
+function saveE(){collect();const e=E,f=F[e.t].split(',');
+  if(!e.d)return toast('Zeit fehlt');if(f.includes('w')&&!e.w)return toast('Wallet fehlt');
+  const n=k=>num(e[k]);const t={i:e.i||uid(),t:e.t,d:e.d,w:e.w,url:e.url.trim(),note:e.note.trim(),tag:e.tag.trim()};
+  const U=s=>s.trim().toUpperCase();
+  t.a=f.includes('a')?U(e.a):(['kauf','ein','aus'].includes(e.t)?'€':'');t.b=f.includes('b')?U(e.b):(e.t==='verkauf'?'€':'');
+  if(f.includes('a')&&!t.a)return toast('Coin fehlt');if(f.includes('b')&&!t.b)return toast('Coin fehlt');
+  t.as=f.includes('as')?n('as'):0;t.bs=f.includes('bs')?n('bs'):0;
+  if(f.includes('as')&&!(t.as>0))return toast('Menge fehlt');if(f.includes('bs')&&!(t.bs>0))return toast('Menge fehlt');
+  if(e.t==='transfer'){t.b=t.a;t.bs=t.as;t.w2=e.w2;if(t.w2===t.w)return toast('Ziel muss ein anderes Wallet sein')}
+  t.eur=e.t==='kauf'?t.as:e.t==='verkauf'?t.bs:(n('eur')||0);
+  if((e.t==='tausch'||e.t==='reward'||e.t==='bestand')&&!(t.eur>=0&&e.eur!==''))return toast('Marktwert in € fehlt (nötig für die Steuer)');
+  const fc=e.fc.trim().toUpperCase(),fs=n('fs'),fe=n('fe');
+  if(e.t!=='verlust'&&(fs>0||fe>0)){t.fc=fc||'€';t.fs=fs>0?fs:0;t.fe=fe>0?fe:(t.fc==='€'?t.fs:0)}
+  if(e.t==='gebuehr'&&!(t.fs>0||t.fe>0))return toast('Gebühr fehlt');
+  if(e.cm)t.cl={m:e.cm,v:n('cv')||0};
+  const i=S.tx.findIndex(x=>x.i===t.i);if(i>=0)S.tx[i]=t;else S.tx.push(t);
+  save();E=null;toast('Gespeichert');go('verlauf')}
+V.verlauf=()=>{const l=sortD([...S.tx]).reverse();if(!l.length)return'<div class="card"><div class="empty">Noch keine Buchungen.</div></div>';
+  return`<div class="card flat"><div class="list">${l.map(t=>{const m=(t.a&&t.a!=='€'?qty(t.as)+' '+t.a:'')+(t.a&&t.b&&t.a!==t.b&&t.t!=='transfer'?' → ':'')+(t.t==='transfer'?'':(t.b&&t.b!=='€'?qty(t.bs)+' '+t.b:t.b==='€'?eur(t.bs):''));
+  return`<button class="row" data-act="edit" data-id="${t.i}"><span class="d">${t.d.slice(5,10).split('-').reverse().join('.')}.<br>${t.d.slice(2,4)}</span><span class="mid"><b>${TYPES[t.t]} ${esc(m||(t.as?eur(t.as):''))}</b><small>${esc(wname(t.w))}${t.tag?' · '+esc(t.tag):''}${t.w2?' → '+esc(wname(t.w2)):''}${t.fe?' · Gebühr '+eur(t.fe):''}</small></span><span class="amt">${t.eur?eur(t.eur):''}${t.est||t.fest?'<br><span class="tag">'+(t.est===2||t.fest===2?'Wert fehlt':'geschätzt')+'</span>':''}${t.cl?'<br><span class="tag">'+(t.cl.m==='offen'?'Claus offen':'Claus')+'</span>':''}</span></button>`}).join('')}</div></div>`};
+V.wallets=()=>{if(W){const x=W;return`<div class="card"><h3>${x.id?'Wallet bearbeiten':'Neues Wallet'}</h3><div class="field"><label for="w-n">Name</label><input id="w-n" value="${esc(x.n)}"></div><div class="field"><label for="w-adr">Public Address (kein Seed, kein Private Key!)</label><input id="w-adr" value="${esc(x.adr)}" autocomplete="off"></div><div class="row2"><div class="field"><label for="w-net">Netzwerk</label><input id="w-net" value="${esc(x.net)}" placeholder="z. B. ETH, BSC, SOL"></div><div class="field"><label for="w-cust">Verwahrt bei</label><input id="w-cust" value="${esc(x.cust)}" placeholder="z. B. Claus (Ledger)"></div></div><div class="field"><label>Status</label><div class="chips">${Object.entries(WST).map(([k,l])=>`<button class="chip ${x.st===k?'on':''}" data-act="wst" data-v="${k}">${l}</button>`).join('')}</div></div><div class="field"><label for="w-note">Notiz</label><input id="w-note" value="${esc(x.note)}"></div><div class="hint">Archiviert: weg aus Auswahl, Übersicht und Warnungen (die Buchungen bleiben für die Steuer erhalten). Tot, gehackt, infiltriert: Bestände zählen nicht zum Portfolio.</div>${x.id&&S.wallets.length>1?`<div class="field"><label for="w-merge">Mit anderem Wallet zusammenführen</label><select id="w-merge"><option value="">–</option>${S.wallets.filter(o=>o.id!==x.id).map(o=>`<option value="${o.id}">${esc(o.n)}</option>`).join('')}</select></div><div class="btns"><button class="btn" data-act="wMerge">Zusammenführen</button></div><div class="hint">Alle Buchungen von „${esc(x.n)}“ gehen ins gewählte Wallet, dieses Wallet verschwindet.</div>`:''}<div class="btns"><button class="btn pri" data-act="wSave">Speichern</button><button class="btn ghost" data-act="wCancel">Zurück</button></div></div>`}
+  const l=[...S.wallets].sort((a,b)=>(a.st==='archiv')-(b.st==='archiv'));return`<div class="btns"><button class="btn pri" data-act="wNew">Neues Wallet</button></div><div class="card flat"><div class="list">${l.map(w=>`<button class="kv" data-act="wEdit" data-id="${w.id}"><span><b>${esc(w.n)}</b> ${w.st!=='aktiv'?`<span class="tag ${BAD.includes(w.st)?'':'st'}">${WST[w.st]}</span>`:''}<br><span class="muted small">${esc(w.net||'')} ${w.adr?esc(w.adr.slice(0,8)+'…'+w.adr.slice(-6)):''} ${w.cust?'· bei '+esc(w.cust):''}</span></span><span>›</span></button>`).join('')||'<div class="empty">Noch keine Wallets.</div>'}</div></div>`};
+V.uebersicht=()=>{if(db&&!ready)return'<div class="card"><div class="empty">Daten werden geladen …</div></div>';
+  const R=calc(S.cfg.meth),h=holdings(R),P=S.cfg.price;
+  const row=o=>{const p=P[o.c];let v='';if(p>0){const w=o.s*p;v=`<br><span class="small ${w>=o.cost?'pos':'neg'}">${eur(w)} (${w>=o.cost?'+':''}${eur(w-o.cost)})</span>`}
+    return`<button class="kv" data-act="price" data-c="${esc(o.c)}"><span><b>${esc(o.c)}</b><br><span class="muted small">Einstand ${eur(o.cost)}${p>0?' · Kurs '+eur(p):' · Kurs eintragen'}</span></span><span class="num">${qty(o.s)}${v}</span></button>`};
+  const main=h.ok.filter(o=>o.cost>=1||(P[o.c]>0&&o.s*P[o.c]>=1)),dust=h.ok.filter(o=>!main.includes(o));
+  const tot=h.ok.reduce((a,o)=>a+o.cost,0),val=h.ok.reduce((a,o)=>a+(P[o.c]>0?o.s*P[o.c]:0),0),all=main.every(o=>P[o.c]>0);
+  const fees=R.fees.reduce((a,x)=>a+x.eur,0);
+  let x=`<div class="card"><h3>Portfolio</h3><div class="big">${eur(all&&main.length?val:tot)}</div><div class="small muted">${all&&main.length?'Wert nach Kursen':'Einstand (Kurse fehlen teils)'}${S.cfg.pt?' · Kurse vom '+new Date(S.cfg.pt).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):''}<br>Einzahlung − Auszahlung ${eur(R.cash[0]-R.cash[1])} · Gebühren gesamt ${eur(fees)}</div><div class="btns"><button class="btn" data-act="prices">Kurse laden</button></div></div>`;
+  if(R.open.length)x+=`<div class="banner"><b>${R.open.length} Buchung(en) mit offenem Claus-Anteil</b><span class="small">Zählen nicht in Bestand und Steuer, bis du den Anteil festlegst.</span></div>`;
+  x+=`<div class="card flat"><div class="list">${main.map(row).join('')||'<div class="empty">Noch keine Bestände.</div>'}</div></div>`;
+  if(dust.length)x+=`<details class="card"><summary>Kleinstbeträge (${dust.length})</summary><div class="list">${dust.map(row).join('')}</div></details>`;
+  if(h.arch.length)x+=`<details class="card"><summary>Archivierte Wallets (${h.arch.length} Coins, Einstand ${eur(h.arch.reduce((a,o)=>a+o.cost,0))})</summary><div class="small muted">Nicht im Portfolio oben enthalten:</div><div class="list">${h.arch.map(o=>`<div class="kv"><span><b>${esc(o.c)}</b></span><span class="num">${qty(o.s)}</span></div>`).join('')}</div></details>`;
+  const bd=Object.entries(h.bad);if(bd.length)x+=`<div class="card"><h3>Nicht verfügbar</h3><div class="small muted">Auf toten, gehackten oder infiltrierten Wallets: ${bd.map(([c,n])=>qty(n)+' '+esc(c)).join(', ')}</div></div>`;return x};
+async function loadPrices(){try{const r=await fetch('https://api.binance.com/api/v3/ticker/price');if(!r.ok)throw new Error();const L=await r.json(),P={};L.forEach(x=>P[x.symbol]=parseFloat(x.price));
+  const eu=P.EURUSDT>0?1/P.EURUSDT:0;let n=0;for(const o of holdings(calc(S.cfg.meth)).ok){const c=o.c,p=P[c+'EUR']||(eu&&(P[c+'USDT']||P[c+'BUSD'])?(P[c+'USDT']||P[c+'BUSD'])*eu:0);if(p>0){S.cfg.price[c]=p;n++}}
+  S.cfg.pt=new Date().toISOString();save();toast(n+' Kurse aktualisiert');render()}catch(e){toast('Kurse nicht abrufbar. Bitte von Hand eintragen.')}}
+const csvDl=(n,t)=>saveF(n,'\ufeff'+t);
+V.steuer=()=>{const R=calc(S.cfg.meth),ys=[...new Set([...R.disp,...R.inc,...R.fees,...R.loss].map(x=>x.d.slice(0,4)))].sort();if(!ys.length)return`<div class="card"><div class="empty">Noch keine steuerrelevanten Vorgänge.</div></div>`+meth();
+  if(!YR||!ys.includes(YR))YR=ys[ys.length-1];const y=YR,D=R.disp.filter(x=>x.d.startsWith(y)),sum=a=>a.reduce((s,x)=>s+x.g,0);
+  const tx=D.filter(x=>x.tax),fr=D.filter(x=>!x.tax),lim=+y>=2023?1000:600,gs=sum(tx),inc=R.inc.filter(x=>x.d.startsWith(y)),fe=R.fees.filter(x=>x.d.startsWith(y)).reduce((a,x)=>a+x.eur,0),ls=R.loss.filter(x=>x.d.startsWith(y));
+  let h=meth()+`<div class="seg">${ys.map(a=>`<button class="${a===y?'on':''}" data-act="yr" data-v="${a}">${a}</button>`).join('')}</div>
+  <div class="card"><h3>Private Veräußerungsgeschäfte ${y}</h3><div class="grp">Haltefrist bis 1 Jahr (steuerpflichtig)</div><div class="big ${gs>=0?'pos':'neg'}">${eur(gs)}</div><div class="small muted">Grenze pro Jahr: ${eur(lim)} (bis 2023: 600 €). ${gs<lim?'Darunter.':'<b>Überschritten.</b>'}</div><div class="grp">Über 1 Jahr gehalten (steuerfrei)</div><div class="num">${eur(sum(fr))}</div></div>
+  <div class="card"><h3>Weitere Zahlen ${y}</h3><div class="kv" style="padding:0;border:0"><span>Rewards / Staking (Wert beim Erhalt)</span><span class="num">${eur(inc.reduce((a,x)=>a+x.eur,0))}</span></div><div class="kv" style="padding:0;border:0"><span>Gebühren gesamt</span><span class="num">${eur(fe)}</span></div><div class="kv" style="padding:0;border:0"><span>Verluste Hack / tot (Anschaffungskosten)</span><span class="num">${eur(ls.reduce((a,x)=>a+x.cost,0))}</span></div><div class="hint">Hack- und Totverluste fließen nicht in die Gewinne ein. Mit Steuerberater klären.</div></div>`;
+  const ES=S.tx.filter(x=>x.d.startsWith(y)&&(x.est||x.fest)&&act(x.w));if(ES.length)h+=`<div class="banner"><b>${ES.length} Buchung(en) mit geschätztem oder fehlendem EUR-Wert</b><span class="small">Prüfen: ${ES.filter(x=>x.est===2||x.fest===2).length} ohne Wert, Rest aus Kursen der Importdatei geschätzt.</span></div>`;
+  const AU=R.auto.filter(x=>x.d.startsWith(y)&&act(x.from)&&act(x.to));if(AU.length)h+=`<div class="banner"><b>${AU.length} fehlende Transfers automatisch ergänzt</b><span class="small">Bestand wurde aus einem anderen Wallet übernommen, als hättest du ihn dorthin geschickt. Bitte bei Gelegenheit als echte Transfers eintragen.</span><details><summary class="small">Liste</summary><div class="small">${AU.slice(0,60).map(x=>x.d.slice(0,10)+' · '+qty(x.s)+' '+esc(x.c)+' · '+esc(wname(x.from))+' → '+esc(wname(x.to))).join('<br>')}</div></details></div>`;
+  if(D.some(x=>x.miss&&act((S.tx.find(t=>t.i===x.i)||{}).w)))h+=`<div class="banner"><b>Bestand fehlt</b><span class="small">Bei diesen Abgängen fehlt der Einkauf in den Daten (Altbestand). Sie sind vorsichtig als steuerpflichtig mit Kosten 0 gerechnet. Auf deinen heutigen Bestand hat das keinen Einfluss.</span><details><summary class="small">Liste (${R.miss.length})</summary><div class="small">${R.miss.filter(x=>x.d.startsWith(y)&&act(x.w)).slice(0,60).map(x=>x.d.slice(0,10)+' · '+qty(x.s)+' '+esc(x.c)+' · '+esc(wname(x.w))).join('<br>')}</div></details></div>`;
+  h+=`<div class="card flat"><div class="tbl"><table style="width:100%;border-collapse:collapse;font-size:12px"><tr><th align="left">Datum</th><th align="left">Coin</th><th align="right">Menge</th><th align="right">Erlös</th><th align="right">Kosten</th><th align="right">G/V</th></tr>${D.map(x=>`<tr style="border-top:1px solid var(--line)"><td>${x.d.slice(0,10)}</td><td>${esc(x.c)}${x.miss?' ?':''}${x.tax?'':' ✓'}</td><td align="right">${qty(x.s)}</td><td align="right">${eur(x.pr)}</td><td align="right">${eur(x.cost)}</td><td align="right" class="${x.g>=0?'pos':'neg'}">${eur(x.g)}</td></tr>`).join('')}</table></div></div><div class="small muted">✓ = über 1 Jahr gehalten. Stand ist keine Steuerberatung.</div><div class="btns"><button class="btn" data-act="csv">CSV ${y} exportieren</button></div>`;return h};
+const meth=()=>`<div class="card"><h3>Verbrauchsfolge</h3><div class="seg">${['FIFO','LIFO'].map(m=>`<button class="${S.cfg.meth===m?'on':''}" data-act="meth" data-v="${m}">${m}</button>`).join('')}</div><div class="small muted">FIFO (zuerst gekauft, zuerst verkauft) ist der Standard und die Vorgabe des BMF.</div><div class="seg">${[['wallet','Je Wallet'],['all','Gesamt (wie bisherige Excel)']].map(([k,l])=>`<button class="${(S.cfg.scope||'wallet')===k?'on':''}" data-act="scope" data-v="${k}">${l}</button>`).join('')}</div><div class="seg"><button class="${S.cfg.heal?'on':''}" data-act="heal" data-v="1">Lücken automatisch füllen</button><button class="${S.cfg.heal?'':'on'}" data-act="heal" data-v="0">Aus</button></div><div class="small muted">Je Wallet: Transfers nehmen das Anschaffungsdatum mit (BMF-Linie). Gesamt: ein Topf je Coin, Wallet-Status zählt dann nicht.</div></div>`;
+let IM=null;
+const ghCard=()=>{if(!KB)return'';if(db){const c=KB.ghLoad();return`<div class="card"><h3>Verbindung</h3><div class="small muted">Deine Daten liegen auf diesem Gerät und im privaten Repository <b>${esc(c.owner)}/${esc(c.repo)}</b>.</div><div class="small" id="ghstate">${esc((GS||{}).msg||'')}</div><div class="btns"><button class="btn" data-act="ghSync">Jetzt synchronisieren</button><button class="btn" data-act="ghCode">Kopplungscode</button><button class="btn dng" data-act="ghOut">Trennen</button></div><div id="ghcode"></div></div>`}
+  return`<div class="card"><h3>Mit GitHub verbinden</h3><div class="small muted">Eigenes privates Repository nur für Krypto. Ist es leer, werden deine lokalen Daten hochgeladen, sonst gilt der Stand im Repository.</div><div class="field"><label for="gh-code">Kopplungscode (wenn schon ein Gerät verbunden ist)</label><input id="gh-code" placeholder="KB1.…" autocapitalize="none"></div><div class="field"><label for="gh-o">GitHub-Benutzername</label><input id="gh-o" autocapitalize="none" autocomplete="off"></div><div class="field"><label for="gh-r">Repository</label><input id="gh-r" value="krypto-daten" autocapitalize="none" autocomplete="off"></div><div class="field"><label for="gh-t">Zugangs-Token</label><input id="gh-t" type="password" autocapitalize="none" autocomplete="off" placeholder="github_pat_…"></div><div id="gh-err" class="small neg"></div><div class="btns"><button class="btn pri" data-act="ghGo">Verbinden</button></div></div>`};
+V.mehr=()=>{let h=ghCard()+`<div class="card"><h3>Binance-Import</h3><div class="small muted">Spot Trade History als CSV (mit Gebühren). Bereits importierte Orders werden erkannt und übersprungen.</div>`;
+  if(!IM)h+=`<div class="btns"><label class="btn pri">CSV wählen<input type="file" accept=".csv" id="bn" hidden></label></div></div>`;
+  else{const t=IM.st,dup=new Set(S.tx.map(x=>x.src)),neu=IM.tx.filter(x=>!dup.has(x.src)).length;
+    h+=`<div class="kv" style="padding:0;border:0"><span>${esc(IM.name)}</span><span class="num">${t.orders} Orders · ${t.fills} Fills</span></div><div class="small">Neu: <b>${neu}</b> · schon vorhanden: ${t.orders-neu}<br>EUR-Wert exakt: ${t.exact} · geschätzt aus Kursen der Datei: ${t.est} · fehlt: ${t.miss}<br>Gebühren: ${Object.entries(t.fees).map(([c,s])=>qty(s)+' '+esc(c)).join(', ')||'–'}${t.feeEst?' · Gebührenwert geschätzt (0,075 % BNB-Satz): '+t.feeEst:''}${t.feeMiss?' · Gebührenwert fehlt: '+t.feeMiss:''}</div>
+    <div class="field"><label for="im-w">Ziel-Wallet</label><select id="im-w">${S.wallets.filter(w=>w.st!=='archiv').map(w=>`<option value="${w.id}">${esc(w.n)}</option>`).join('')}<option value="">+ neues Wallet „Binance“</option></select></div>
+    <div class="hint">Zeiten bleiben UTC. „Geschätzt“ = Wert aus nahen Kursen derselben Datei (EUR-Paare), später durch echte Kurse ersetzbar.</div><div class="btns"><button class="btn pri" data-act="imGo">${neu} Buchungen importieren</button><button class="btn ghost" data-act="imNo">Abbrechen</button></div></div>`}
+  return h+`<div class="card"><h3>Datensicherung</h3><div class="small muted">Aktuell lokal im Gerät gespeichert. Die GitHub-Anbindung kommt im nächsten Schritt.</div><div class="btns"><button class="btn" data-act="exp">Sichern (JSON)</button><label class="btn">Wiederherstellen<input type="file" accept=".json" id="imp" hidden></label></div></div>`};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,v=b.dataset.v,id=b.dataset.id;
+  if(a==='go')go(v);
+  else if(a==='type'){collect();E.t=v;render()}
+  else if(a==='saveE')saveE();
+  else if(a==='cancelE'){E=null;render()}
+  else if(a==='delE'){S.tx=S.tx.filter(x=>x.i!==E.i);save();E=null;toast('Gelöscht');go('verlauf')}
+  else if(a==='edit'){E=toE(S.tx.find(x=>x.i===id));go('buchen')}
+  else if(a==='wNew'){W={id:'',n:'',adr:'',net:'',cust:'',st:'aktiv',note:''};go('wallets')}
+  else if(a==='wEdit'){W=Object.assign({adr:'',net:'',cust:'',note:''},S.wallets.find(x=>x.id===id));render()}
+  else if(a==='wst'){wcollect();W.st=v;render()}
+  else if(a==='wMerge'){wcollect();const t=$('#w-merge').value;if(!t)return toast('Ziel-Wallet wählen');const src=W.id;S.tx.forEach(x=>{if(x.w===src)x.w=t;if(x.w2===src)x.w2=t});S.wallets=S.wallets.filter(x=>x.id!==src);W=null;save();toast('Zusammengeführt');render()}
+  else if(a==='wCancel'){W=null;render()}
+  else if(a==='wSave'){wcollect();if(!W.n.trim())return toast('Name fehlt');if(!W.id){W.id=uid();S.wallets.push(W)}else S.wallets=S.wallets.map(x=>x.id===W.id?W:x);save();W=null;render()}
+  else if(a==='price'){const p=prompt('Aktueller Kurs von '+b.dataset.c+' in €',S.cfg.price[b.dataset.c]||'');if(p!==null){const n=num(p);if(n>0)S.cfg.price[b.dataset.c]=n;else delete S.cfg.price[b.dataset.c];save();render()}}
+  else if(a==='meth'){S.cfg.meth=v;save();render()}
+  else if(a==='heal'){S.cfg.heal=v==='1';save();render()}
+  else if(a==='scope'){S.cfg.scope=v;save();render()}
+  else if(a==='yr'){YR=v;render()}
+  else if(a==='csv'){const R=calc(S.cfg.meth);csvDl('krypto-'+YR+'-'+S.cfg.meth+'.csv','Datum;Coin;Menge;Erwerb;Erlös;Kosten;Gewinn;steuerpflichtig\n'+R.disp.filter(x=>x.d.startsWith(YR)).map(x=>[x.d.slice(0,10),x.c,x.s,x.acq.slice(0,10),x.pr.toFixed(2),x.cost.toFixed(2),x.g.toFixed(2),x.tax?'ja':'nein'].join(';').replace(/\./g,',')).join('\n'))}
+  else if(a==='imNo'){IM=null;render()}
+  else if(a==='imGo'){let w=$('#im-w').value;if(!w){w=uid();S.wallets.push({id:w,n:'Binance',adr:'',net:'',cust:'',st:'aktiv',note:''})}const n=applyImport(IM.tx,w);IM=null;toast(n+' Buchungen importiert');go('verlauf')}
+  else if(a==='exp')saveF('krypto-backup.json',JSON.stringify(S,null,1))
+  else if(a==='prices')loadPrices()
+  else if(a==='ghSync'){db.sync();toast('Synchronisiere …')}
+  else if(a==='ghCode'){$('#ghcode').innerHTML='<textarea readonly rows=4 style="width:100%;font:12px monospace">'+esc(KB.makeCode(KB.ghLoad()))+'</textarea><div class="hint">Enthält deinen Token. Nur dir selbst schicken und danach löschen.</div>'}
+  else if(a==='ghOut'){if(confirm('Trennen? Die lokale Kopie wird gelöscht'+(db.pending()?' ('+db.pending()+' Änderungen noch nicht hochgeladen!)':'')+'.')){KB.ghClear();location.reload()}}
+  else if(a==='ghGo'){const er=$('#gh-err');let c;try{const code=$('#gh-code').value.trim();c=code?KB.parseCode(code):{owner:$('#gh-o').value.trim(),repo:$('#gh-r').value.trim(),token:$('#gh-t').value.trim()};if(!c.owner||!c.repo||!c.token)throw new Error('Bitte alle drei Felder ausfüllen.')}catch(x){er.textContent=x.message;return}
+    er.textContent='Verbinde …';KB.ghConnect(c).then(()=>location.reload()).catch(x=>er.textContent=(x instanceof TypeError)?'Keine Verbindung zu GitHub.':x.message)}});
+function wcollect(){if(!W)return;for(const k of['n','adr','net','cust','note']){const el=$('#w-'+k);if(el)W[k]=el.value}}
+document.addEventListener('change',e=>{if(e.target.id==='bn'){const f=e.target.files[0];if(!f)return;f.text().then(t=>{const r=parseBinance(t);if(r.err)toast(r.err);else{IM=Object.assign(r,{name:f.name});render()}})}
+  if(e.target.id==='imp'){const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{S=Object.assign({wallets:[],tx:[],cfg:{meth:'FIFO',price:{}}},JSON.parse(t));if(db&&!ready)return toast('Noch nicht verbunden, bitte kurz warten');save();toast('Wiederhergestellt');render()}catch(x){toast('Datei ungültig')}})}});
+start();
+if('serviceWorker' in navigator&&KB&&!KB.isNative()&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
