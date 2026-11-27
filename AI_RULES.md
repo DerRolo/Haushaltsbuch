@@ -139,6 +139,9 @@ Bei jeder Anforderung zuerst klären, ob sie betrifft:
 - **Auffälligkeiten** (Sync-Ergebnisse, Abweichungen, Lücken, ähnliche Buchungen) gehören in die zentrale Ansicht ⋯ → Auffälligkeiten, nicht in die Wallet-Liste. Dort steht nur eine Kurzinfo mit Link.
 - **Nie einen Transfer vorschlagen oder buchen, ohne vorher ähnliche vorhandene Buchungen zu prüfen** (gleicher Coin, ähnliche Menge, Datum ± einige Tage). Der Nutzer entscheidet: verbinden, ersetzen oder neu buchen. Nichts automatisch.
 - **Netzwerke:** Neue Netzwerke (zuletzt MultiversX/EGLD) immer mit Adressprüfung, Namens-Erkennung und Bestandsabfrage eintragen.
+- **Das „i“ (Erklärung) sitzt überall ganz rechts**: in Karten-Überschriften, in der Zeile mit Liste/Karten (Verlauf), bei Gesamtwert, bei Wallets rechts neben „Synchronisieren“. Keine eigene Zeile „Hilfe zu diesem Tab“ mehr im Krypto-Buch.
+- **Kurse:** „⟳ Kurse“ (schnell, aktuelle Kurse) steht bei Gesamtwert, „⟳ Verlauf“ (langsam, Kursverlauf für die Grafik) in der Zeile mit 1W/1M/6M/1J/Max.
+- **Betrag und Prozent** werden nur durch ein Leerzeichen getrennt, nie durch einen Punkt „·“ (wirkt wie ein Fehler). Gilt in beiden Apps.
 - **Spam** muss sich überall markieren und wieder freigeben lassen.
 - **NFTs und Sonstiges** zählen nicht in Gesamtwert und Anteile, bleiben aber für die Steuer erhalten.
 - **Kategorien** werden in zwei Schritten gewählt: Ausgabe, Einnahme, Intern, dann die passenden Kategorien.

@@ -112,7 +112,7 @@ tfoot td{font-weight:700}
 .dt3{display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:6px}.dcol{display:flex;gap:2px;align-items:stretch;min-width:0}.dcol input{flex:1;min-width:0;width:100%;text-align:center;padding:0 2px;font-size:15px}.dcol .btn{min-width:26px;padding:0 3px;min-height:38px;font-size:17px;line-height:1}
 .lnk{background:none;border:0;color:var(--accent);font-size:12px;font-weight:600;padding:0 0 0 6px;text-decoration:underline}
 .ibtn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font:italic 700 15px Georgia,serif;padding:0;margin-left:auto;cursor:pointer;flex:none}
-h3 .ibtn,h2 .ibtn{margin-left:8px;vertical-align:middle}
+h3 .ibtn,h2 .ibtn{margin-left:8px;vertical-align:middle}h3:has(.ibtn),h2:has(.ibtn){display:flex;align-items:center;gap:6px}h3 .ibtn,h2 .ibtn{margin-left:auto}
 .tabinfo{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-bottom:8px}
 .infotxt p,.infotxt h3{margin:0 0 10px}.infotxt h3{margin-top:14px;font-size:15px}
 .ex{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 12px}.exr{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px}.exv{flex:none;min-width:96px;max-width:110px;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-weight:600;background:var(--surface)}.exa{color:var(--muted)}
@@ -1038,7 +1038,7 @@ function startCard(){
 const startUpd=()=>{const sc=$('#startcard');if(sc)sc.innerHTML=startCard()};
 const _ve=V.eintragen;V.eintragen=()=>'<div id="startcard">'+startCard()+'</div>'+_ve();
 const _vk=V.konten;V.konten=()=>startCard()+_vk();
-const APP_VER='4.4',APP_DATE='27.11.2026';
+const APP_VER='4.5',APP_DATE='27.11.2026';
 const verCard=()=>`<div class="vers">Haushaltsbuch · Version ${APP_VER} (${APP_DATE})</div>`;
 const langCard=()=>`<div class="card flat"><div style="padding:12px 14px"><h3>Sprache</h3><div class="btns" style="margin-top:8px">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button class="btn sm ${(window.I18N&&I18N.lang())===k?'pri':'ghost'}" data-act="lang" data-v="${k}">${l}</button>`).join('')}</div></div></div>`;
 V.einstellungen=()=>`${ghCard()}${langCard()}${verCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>

@@ -63,6 +63,10 @@ Für den Alltag: schnell buchen, übersichtlich auswerten, nichts doppelt pflege
 
 Ein vollständiges Buch für deine Coins, gebaut für die deutsche Steuer, aber auch einfach als Übersicht nutzbar.
 
+### Kurse
+- In der Übersicht lädt **„⟳ Kurse“** neben dem Gesamtwert die aktuellen Kurse (schnell). **„⟳ Verlauf“** neben 1W/1M/6M/1J/Max holt den Kursverlauf für die Grafik (dauert länger).
+- Das **„i“** mit der Erklärung steht überall ganz rechts.
+
 ### Wallets und Börsen
 - Beim Anlegen wählst du **Börse** (Binance, KuCoin …) oder **Wallet** (Ledger, MetaMask, Atomic Wallet …). Jedes hat seinen eigenen Bestand.
 - Ein Wallet kann **mehrere öffentliche Adressen** in verschiedenen Netzwerken haben. Das Netzwerk wählst du aus einer Liste mit Logos.
