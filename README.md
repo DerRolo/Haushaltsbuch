@@ -94,8 +94,10 @@ Ein vollständiges Buch für deine Coins, gebaut für die deutsche Steuer, aber 
 - Für Bitcoin und die Ethereum-Netzwerke (Ethereum, BNB Chain, Polygon, Arbitrum, Optimism, Base, Avalanche) schlägt sie dazu **Buchungen vor**: Transfers zwischen deinen Wallets werden als Transfer erkannt, Gebühren hängen an der Buchung. **Gebucht wird nur, was du bestätigst.**
 - Wallets, denen du vertraust, können eindeutige Fälle **gleich automatisch eintragen**. Unklares (zum Beispiel ein Ausgang an eine fremde Adresse) bleibt immer offen.
 - **Hash-Abgleich:** Stimmt der Transaktions-Hash mit einer deiner Buchungen überein, schlägt die App nichts doppelt vor, sondern fragt, ob es dieselbe Transaktion ist.
+- **Auffälligkeiten:** Alles, was beim Synchronisieren auffällt, steht nicht in der Wallet-Liste, sondern in einer eigenen Ansicht über **⋯ → Auffälligkeiten**, nach Wallet sortiert: Buchungsvorschläge, Abweichungen („Bestand weicht ab"), Lücken und passende Buchungen. In der Wallet-Zeile bleibt nur eine Kurzinfo mit Link. Offene Vorschläge bleiben pro Gerät gespeichert.
+- **Ähnliche Buchungen:** Bevor die App einen Transfer vorschlägt, sucht sie vorhandene Buchungen mit gleichem Coin, fast gleicher Menge (±2 %) und Datum (±10 Tage), zum Beispiel einen Verlust oder Bestand auf der Gegenseite. Du wählst: **„Ist dieselbe Transaktion"** (verbinden) oder **„Durch Transfer ersetzen"**. Beim Buchen eines Transfers warnt die App zusätzlich, wenn es beim Ziel-Wallet schon etwas Ähnliches gibt. So entsteht kein doppelter Abgang.
 - **Spam:** Unerwünschte Token lassen sich markieren und werden danach überall ignoriert.
-- Netzwerke mit Bestandsabfrage: Bitcoin, Ethereum, BNB Chain, Solana, Cardano, Tron, Polygon, Arbitrum, Optimism, Base, Avalanche, XRP, Celestia, Zilliqa, VeChain, Litecoin, Stellar, Cosmos.
+- Netzwerke mit Bestandsabfrage: Bitcoin, Ethereum, BNB Chain, Solana, Cardano, Tron, Polygon, Arbitrum, Optimism, Base, Avalanche, XRP, Celestia, Zilliqa, VeChain, Litecoin, Stellar, Cosmos, MultiversX (EGLD, früher Elrond).
 - Bei jeder Abfrage sehen die öffentlichen Dienste die Adresse und deine IP-Adresse. Seed-Phrasen und Private Keys gehören nirgends in die App.
 
 ### Steuer (Krypto)

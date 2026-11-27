@@ -136,6 +136,9 @@ Bei jeder Anforderung zuerst klären, ob sie betrifft:
 - **Börse oder Wallet:** Börsen haben keine Adressen und kommen per CSV, Wallets haben Adressen und können abgefragt werden. Alte Wallets ohne Angabe werden aus ihren Daten abgeleitet.
 - **Abfragen erlauben** ist eine Checkbox in der Wallet-Liste und im Editor. Beim Ausschalten wird gefragt, ob die Sync-Buchungen bleiben oder entfernt werden.
 - **Synchronisieren** sitzt in der Wallet-Ansicht oben rechts neben dem „i" und in jeder Wallet-Zeile. Er ist immer sichtbar, auch wenn noch nichts freigegeben ist, und erklärt dann, was zu tun ist.
+- **Auffälligkeiten** (Sync-Ergebnisse, Abweichungen, Lücken, ähnliche Buchungen) gehören in die zentrale Ansicht ⋯ → Auffälligkeiten, nicht in die Wallet-Liste. Dort steht nur eine Kurzinfo mit Link.
+- **Nie einen Transfer vorschlagen oder buchen, ohne vorher ähnliche vorhandene Buchungen zu prüfen** (gleicher Coin, ähnliche Menge, Datum ± einige Tage). Der Nutzer entscheidet: verbinden, ersetzen oder neu buchen. Nichts automatisch.
+- **Netzwerke:** Neue Netzwerke (zuletzt MultiversX/EGLD) immer mit Adressprüfung, Namens-Erkennung und Bestandsabfrage eintragen.
 - **Spam** muss sich überall markieren und wieder freigeben lassen.
 - **NFTs und Sonstiges** zählen nicht in Gesamtwert und Anteile, bleiben aber für die Steuer erhalten.
 - **Kategorien** werden in zwei Schritten gewählt: Ausgabe, Einnahme, Intern, dann die passenden Kategorien.
