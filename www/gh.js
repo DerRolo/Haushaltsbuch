@@ -31,8 +31,10 @@ async function ghConnect(c){
 }
 
 /* ----- Datenbank-Adapter ----- */
-function mergeMonth(local,remote){
-  const m=new Map();(remote&&remote.e||[]).forEach(e=>m.set(e.i,e));(local&&local.e||[]).forEach(e=>m.set(e.i,e));
+function mergeMonth(local,remote,base){
+  const m=new Map(),bs=base?new Set(base):null,lo=new Set((local&&local.e||[]).map(e=>e.i));
+  /* Einträge, die es beim letzten Abgleich schon gab und die lokal fehlen, wurden hier gelöscht und kommen nicht zurück */
+  (remote&&remote.e||[]).forEach(e=>{if(bs&&bs.has(e.i)&&!lo.has(e.i))return;m.set(e.i,e)});(local&&local.e||[]).forEach(e=>m.set(e.i,e));
   return{e:[...m.values()].sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0)};
 }
 function ghMake(cfg,onStatus){
@@ -62,37 +64,42 @@ function ghMake(cfg,onStatus){
     const j=await res.json();return{d:JSON.parse(b64d(j.content)),s:j.sha};
   }
   function httpErr(res){const e=new Error('HTTP '+res.status);e.http=res.status;return e}
+  const idsOf=d=>d&&d.e?d.e.map(e=>e.i):undefined;
   async function push(){
-    for(const [p,r] of [...docs]){
-      if(!r.x)continue;const v=r.v;let merged=false;
+    let n=0;
+    for(const p of [...docs.keys()]){
+      let r=docs.get(p);if(!r||!r.x)continue;let v=r.v,merged=false;
       const put=()=>fetch(API+'/contents/data/'+p+'.json',{method:'PUT',headers:H,body:JSON.stringify(Object.assign({message:'Haushaltsbuch: '+p,content:b64e(JSON.stringify(r.d))},r.s?{sha:r.s}:{}))});
       let res=await put();
       if(res.status===409||res.status===422){
         const rem=await remoteDoc(p);
-        if(rem){if(p.startsWith('monate/')){r.d=mergeMonth(r.d,rem.d);merged=true}r.s=rem.s}else r.s=null;
+        r=docs.get(p)||r;                       /* jüngster lokaler Stand, falls du zwischendurch etwas geändert hast */
+        if(rem){if(p.startsWith('monate/')){r.d=mergeMonth(r.d,rem.d,r.b);merged=true}r.s=rem.s}else r.s=null;
+        if(merged)r.v=(r.v||0)+1;v=r.v;
         res=await put();
       }
       if(!res.ok)throw httpErr(res);
-      const j=await res.json();r.s=j.content.sha;if(r.v===v)r.x=0;persist(p);
+      const j=await res.json(),cur=docs.get(p)||r;cur.s=j.content.sha;if(cur.v===v){cur.x=0;cur.pt=Date.now();cur.b=idsOf(cur.d)}persist(p);n++;
       if(merged)notify([p],'modified');
     }
+    return n;
   }
   async function pull(){
     const res=await fetch(API+'/git/trees/'+encodeURIComponent(cfg.branch||'main')+'?recursive=1',{headers:H});
     if(res.status===409)return[];           // leeres Repository
     if(!res.ok)throw httpErr(res);
     const t=await res.json();
-    const todo=(t.tree||[]).filter(x=>x.type==='blob'&&/^data\/.+\.json$/.test(x.path)).map(x=>({p:x.path.slice(5,-5),sha:x.sha})).filter(x=>{const l=docs.get(x.p);return !(l&&(l.x||l.s===x.sha))});
+    const todo=(t.tree||[]).filter(x=>x.type==='blob'&&/^data\/.+\.json$/.test(x.path)).map(x=>({p:x.path.slice(5,-5),sha:x.sha})).filter(x=>{const l=docs.get(x.p);return !(l&&(l.x||l.s===x.sha||(l.pt&&Date.now()-l.pt<30000)))});
     const changed=[];
     for(let i=0;i<todo.length;i+=6){
-      await Promise.all(todo.slice(i,i+6).map(async x=>{const rd=await remoteDoc(x.p,cfg.branch);if(!rd)return;const l=docs.get(x.p);if(l&&l.x)return;docs.set(x.p,{d:rd.d,s:rd.s,x:0,v:(l&&l.v||0)});persist(x.p);changed.push(x.p)}));
+      await Promise.all(todo.slice(i,i+6).map(async x=>{const rd=await remoteDoc(x.p,cfg.branch);if(!rd)return;const l=docs.get(x.p);if(l&&l.x)return;docs.set(x.p,{d:rd.d,s:rd.s,x:0,v:(l&&l.v||0),b:idsOf(rd.d)});persist(x.p);changed.push(x.p)}));
     }
     return changed;
   }
   async function sync(){
     if(syncing)return;syncing=true;status('busy','synchronisiere …');
     try{
-      await push();const changed=await pull();
+      const pushed=await push();const changed=pushed&&firstDone?[]:await pull();
       const first=!synced;synced=true;
       if(first||!firstDone){firstDone=true;subs.forEach(s=>{if(s.kind==='doc')s.fn(mkDoc(s.p));else s.fn(mkCol(s.c,changed.filter(p=>p.startsWith(s.c+'/')),'modified'))})}
       else if(changed.length)notify(changed,'modified');
@@ -104,12 +111,12 @@ function ghMake(cfg,onStatus){
       else status('offline',pending()?pending()+' Änderungen warten auf Internet':'offline');
     }finally{syncing=false}
   }
-  function scheduleFlush(){clearTimeout(flushT);flushT=setTimeout(sync,900)}
+  function scheduleFlush(){clearTimeout(flushT);flushT=setTimeout(sync,500)}
   const hasCache=docs.size>0;
   const db={
     doc:p=>({
       get:async()=>mkDoc(p),
-      set:async d=>{const o=docs.get(p);docs.set(p,{d:clone(d),s:o?o.s:null,x:1,v:(o?o.v:0)+1});persist(p);notify([p],'modified');status('dirty',pending()+' Änderungen noch nicht hochgeladen');scheduleFlush()},
+      set:async d=>{const o=docs.get(p);docs.set(p,{d:clone(d),s:o?o.s:null,x:1,v:(o?o.v:0)+1,b:o?o.b:undefined,pt:o?o.pt:undefined});persist(p);notify([p],'modified');status('dirty','wird gespeichert …');scheduleFlush()},
       onSnapshot:fn=>{const s={kind:'doc',p,fn};subs.push(s);if(hasCache||firstDone)setTimeout(()=>fn(mkDoc(p)),0);return()=>{const i=subs.indexOf(s);if(i>=0)subs.splice(i,1)}}
     }),
     collection:c=>({
