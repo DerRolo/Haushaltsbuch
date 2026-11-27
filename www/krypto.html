@@ -730,7 +730,7 @@ const introK=()=>{const noW=!S.wallets.length,noT=!S.tx.length;if(!(noW||noT)||U
   <div class="small"><b>• 3. Kurse und Steuer</b><br>In der Übersicht holst du aktuelle Kurse. Im Tab „Steuer“ siehst du die Berechnung nach FIFO (Standard) und den Bericht fürs Finanzamt. Ein ⚠ am Wallet zeigt dir, wenn Bestand fehlt, und du kannst es dort ausgleichen.</div>
   <div class="small muted">Wallets lassen sich jederzeit umbenennen, archivieren (ausgeblendet, Buchungen bleiben für die Steuer) oder zusammenführen.</div>
   <div class="btns">${noW?'<button class="btn pri" data-act="wNew">Erstes Wallet anlegen</button>':'<button class="btn pri" data-act="impOpen">Buchungen importieren</button><button class="btn" data-act="go" data-v="buchen">Von Hand buchen</button>'}<button class="btn ghost" data-act="introX">Ausblenden</button></div></div>`};
-const APP_VER='2.6',APP_DATE='27.11.2026';
+const APP_VER='2.7',APP_DATE='27.11.2026';
 const _ue=V.uebersicht;V.uebersicht=()=>introK()+_ue();
 /* ---------- Regelmäßige Buchungen ---------- */
 const IVS={d:'täglich',w:'wöchentlich',w2:'alle 2 Wochen',m:'monatlich',q:'vierteljährlich',y:'jährlich'};
@@ -759,7 +759,7 @@ function adjRunEuro(zero){const q=ADJ,n=zero?0:num(($('#aj-n')||{}).value);if(!i
   const sc=S.cfg.scope;S.cfg.scope='wallet';const R=calc(S.cfg.meth);S.cfg.scope=sc;const cur=R.eurW[q.w]||0,df=Math.round((n-cur)*100)/100;if(Math.abs(df)<.005){ADJ=null;render();return toast('Euro-Guthaben stimmt schon')}
   const id=uid(),t={i:id,t:df>0?'ein':'aus',d:new Date().toISOString().slice(0,19),w:q.w,as:Math.abs(df),eur:Math.abs(df),tag:'Ausgleich',note:'Euro-Guthaben abgeglichen (war '+eur(cur)+', ist '+eur(n)+')'};
   S.tx.push(t);ADJ=null;save();render();toast('Euro-Guthaben abgeglichen',()=>{S.tx=S.tx.filter(x=>x.i!==id);save();render()})}
-function adjRun(zero){if(ADJ&&ADJ.c==='€')return adjRunEuro(zero);const q=ADJ,c=(($('#aj-c')||{}).value||'').trim().toUpperCase(),n=zero?0:num(($('#aj-n')||{}).value),ev=num(($('#aj-e')||{}).value);if(!c)return toast('Coin fehlt');if(!(n>=0))return toast('Bestand nicht lesbar');
+function adjRun(zero){if(!ADJ)return;if(ADJ.c==='€')return adjRunEuro(zero);const q=ADJ,c=(($('#aj-c')||{}).value||'').trim().toUpperCase(),n=zero?0:num(($('#aj-n')||{}).value),ev=num(($('#aj-e')||{}).value);if(!c)return toast('Coin fehlt');if(!(n>=0))return toast('Bestand nicht lesbar');
     const sc=S.cfg.scope;S.cfg.scope='wallet';const R=calc(S.cfg.meth);S.cfg.scope=sc;let cur=0;(R.lots.get(q.w+'|'+c)||[]).forEach(l=>cur+=l.s);const df=n-cur;if(Math.abs(df)<1e-9){ADJ=null;render();return toast('Bestand stimmt schon')}
     const now=new Date().toISOString().slice(0,19),id=uid();let t;
     if(df>0){const p=PXM()[c],e=ev>=0?ev:(p>0?df*p:0);t={i:id,t:'bestand',d:now,w:q.w,b:c,bs:df,eur:e,tag:'Ausgleich',note:'Bestand abgeglichen'}}
