@@ -89,10 +89,17 @@ jobs:
       - name: APK umbenennen
         run: cp android/app/build/outputs/apk/debug/app-debug.apk Haushaltsbuch_v1.${{ github.run_number }}.apk
 
+      - name: Signatur der APK prüfen und notieren
+        run: |
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | sort -V | tail -1)
+          FP=$($APKSIGNER verify --print-certs Haushaltsbuch_v1.${{ github.run_number }}.apk | grep -i "SHA-256" | head -1 | sed 's/.*: //')
+          echo "Signatur-Fingerabdruck der APK: $FP"
+          echo "Version 1.${{ github.run_number }}. Signatur (SHA-256): $FP. Dieser Wert muss in JEDEM Release gleich sein, sonst lässt sich die App nicht aktualisieren." > release-notes.txt
+
       - name: Release mit APK veröffentlichen
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.${{ github.run_number }}
           name: Haushaltsbuch 1.${{ github.run_number }}
           files: Haushaltsbuch_v1.${{ github.run_number }}.apk
-          body: "Version 1.${{ github.run_number }}. Bei Installationsfehler zuerst die alte App einmal deinstallieren, danach klappen Updates."
+          body_path: release-notes.txt
