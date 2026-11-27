@@ -75,6 +75,7 @@ Ein vollständiges Buch für deine Coins, gebaut für die deutsche Steuer, aber 
 - Beim Anlegen wählst du **Börse** (Binance, KuCoin …) oder **Wallet** (Ledger, MetaMask, Atomic Wallet …). Jedes hat seinen eigenen Bestand.
 - Ein Wallet kann **mehrere öffentliche Adressen** in verschiedenen Netzwerken haben. Das Netzwerk wählst du aus einer Liste mit Logos.
 - Ein Wallet kann einem anderen Menschen gehören („Verwahrt bei"), zum Beispiel Familie. Anteile lassen sich ausweisen („Mit anderen geteilt").
+- **Löschen oder zusammenführen:** Im Wallet-Editor gibt es **Zusammenführen** (Buchungen wandern in ein anderes Wallet) und **Wallet löschen** (mit Rückfrage und Rückgängig; Buchungen des Wallets werden mitgelöscht).
 - **Status:** aktiv, archiviert, tot, gehackt, infiltriert. Tote und gehackte Wallets zählen nicht zum Portfolio, ihre Buchungen bleiben für die Steuer erhalten.
 
 ### Buchungen

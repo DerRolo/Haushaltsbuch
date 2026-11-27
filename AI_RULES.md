@@ -144,6 +144,8 @@ Bei jeder Anforderung zuerst klären, ob sie betrifft:
 - **Betrag und Prozent** werden nur durch ein Leerzeichen getrennt, nie durch einen Punkt „·“ (wirkt wie ein Fehler). Gilt in beiden Apps.
 - **Kopfzeile in beiden Apps:** Einstellungen ist überall das **Zahnrad** (ganz rechts). Links davon sitzt der Wechsel-Knopf („‹ Haushalt“ / „Krypto ›“, Aussehen unverändert). Im Krypto-Buch stehen links davon noch ⋯ und die Glocke.
 - **Benachrichtigungen (Glocke, Krypto-Buch):** rote Zahl für Ungelesenes, beim Antippen verschwindet die Zahl, die Liste bleibt abrufbar. Einträge springen zur Sache (Auffälligkeiten, Buchung, Übersicht). Anlass: neue Auffälligkeiten nach dem Synchronisieren und Bestände, die steuerfrei werden. Nur sparsam benachrichtigen, nie pro Kleinigkeit (Spam vermeiden). Die Liste liegt pro Gerät.
+- **Was die Glocke meldet, muss in der Ansicht auch stehen.** Zähler (Glocke, Menü) und Ansicht Auffälligkeiten nutzen dieselbe Filterung. Vorschläge werden pro Wallet gezeigt, auch wenn das Wallet archiviert ist oder keinen Abfragestand mehr hat.
+- **Wallets lassen sich löschen** (Editor, mit Rückfrage, Anzahl der betroffenen Buchungen und Rückgängig). „Zusammenführen“ bleibt die Alternative, die Buchungen erhält.
 - **Spam** muss sich überall markieren und wieder freigeben lassen.
 - **NFTs und Sonstiges** zählen nicht in Gesamtwert und Anteile, bleiben aber für die Steuer erhalten.
 - **Kategorien** werden in zwei Schritten gewählt: Ausgabe, Einnahme, Intern, dann die passenden Kategorien.
