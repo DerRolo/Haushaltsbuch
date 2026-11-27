@@ -117,6 +117,7 @@ details[open]{display:flex;flex-direction:column;gap:10px}
 summary{cursor:pointer;font-weight:500}
 @media (prefers-reduced-motion:no-preference){.chip,.btn{transition:background .12s}}
 .ibtn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font:italic 700 15px Georgia,serif;padding:0;margin-left:8px;cursor:pointer;flex:none;vertical-align:middle}
+.gear{display:inline-flex;align-items:center;padding:5px 9px}.bell{position:relative;display:inline-flex;align-items:center;padding:5px 9px}.bdg{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#d93025;color:#fff;font:700 11px/18px system-ui,sans-serif;text-align:center;padding:0 4px}.bdg[hidden]{display:none}.nti{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;font:inherit;cursor:pointer}.nti.new{background:rgba(217,48,37,.07)}.nti .nd{flex:none;width:9px;height:9px;border-radius:50%;margin-top:6px;background:transparent}.nti.new .nd{background:#d93025}.nti small{display:block;color:var(--muted)}
 .segrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0}.segrow .seg{margin:0}.hrow{display:flex;justify-content:space-between;align-items:center;gap:8px}.hr-r{display:flex;align-items:center;gap:8px}.rbtn{border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:999px;padding:4px 10px;font:600 12px inherit;font-family:inherit;cursor:pointer;white-space:nowrap}.card h3:has(.ibtn),label:has(.ibtn){display:flex;align-items:center;gap:6px}.card h3 .ibtn,label .ibtn{margin-left:auto}
 .tabinfo{display:flex;justify-content:flex-end;align-items:center;gap:8px}.tabinfo .ibtn{margin-left:0}
 .infotxt p,.infotxt h3{margin:0 0 10px}.infotxt h3{margin-top:14px;font-size:15px}.infotxt{padding:4px 0}
@@ -160,7 +161,7 @@ div.wx>.wc{grid-template-columns:30px minmax(0,1fr) auto auto}div.wx>.wc.wsm{gri
 .qchk{display:flex;align-items:center;gap:10px;padding:8px 2px;font-size:14px;font-weight:500;cursor:pointer}.qchk input{width:24px;height:24px;margin:0;flex:none;accent-color:var(--accent,#0e6b5b)}.wtop{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin:10px 0}.wtl{display:flex;flex-wrap:wrap;gap:8px}.wtr{display:flex;align-items:center;gap:10px;flex:1;justify-content:space-between;min-width:200px}.chip.qt{font-size:12px;padding:4px 10px;margin-left:4px}.msh{max-height:82vh;overflow:auto}.sybig{font-weight:700;font-size:15px;padding:10px 18px}.spin{display:inline-block;animation:kbspin 1s linear infinite}@keyframes kbspin{to{transform:rotate(360deg)}}
 .pr{border-top:1px solid var(--line);padding:10px 0}.pr .fxw{font-weight:400;font-size:12px;color:var(--muted)}.pr .row2{display:flex!important;flex-wrap:wrap;gap:6px}.pr .row2 select{flex:1 1 150px;min-width:0}
 .ci.eu{background:#d6ece4;color:#0e6b5b;font-size:15px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}[hidden]{display:none!important}</style></head><body>
-<div id="app"><header class="top"><div><h1>Krypto</h1><div class="sum" id="hsum"></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="sync" id="sync"><i></i><span>lokal gespeichert</span></div><div style="display:flex;gap:6px"><a class="btn sm ghost" href="index.html" style="text-decoration:none">‹ Haushalt</a><button class="btn sm ghost" data-act="go" data-v="mehr">Einstellungen</button><button class="btn sm ghost" data-act="menu" aria-label="Aktionen" style="font-size:18px;line-height:1;padding:4px 12px">⋯</button></div></div></header><nav class="tabs" id="tabs"></nav><main id="main"></main></div><div id="menu"></div><div id="toast"></div>
+<div id="app"><header class="top"><div><h1>Krypto</h1><div class="sum" id="hsum"></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><div class="sync" id="sync"><i></i><span>lokal gespeichert</span></div><div style="display:flex;gap:6px;align-items:center"><button class="btn sm ghost bell" id="bell" data-act="bell" aria-label="Benachrichtigungen" title="Benachrichtigungen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="bdg" id="bdg" hidden></span></button><button class="btn sm ghost" data-act="menu" aria-label="Aktionen" style="font-size:18px;line-height:1;padding:4px 12px">⋯</button><a class="btn sm ghost" href="index.html" style="text-decoration:none">‹ Haushalt</a><button class="btn sm ghost gear" data-act="go" data-v="mehr" aria-label="Einstellungen" title="Einstellungen"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div></header><nav class="tabs" id="tabs"></nav><main id="main"></main></div><div id="menu"></div><div id="toast"></div>
 <script>/* Gemeinsame Übersetzungsschicht (Deutsch → Englisch) für Haushaltsbuch und Krypto-Buch.
    Die Apps sind auf Deutsch geschrieben; im englischen Modus werden Texte beim Anzeigen ersetzt. */
 (function(){
@@ -370,6 +371,7 @@ I18N.add({"Abfragen erlauben":"Allow querying","Behalten und nur ausschalten":"K
 I18N.add({"Abfragen erlauben":"Allow querying"});
 I18N.add({"Auffälligkeiten":"Findings","Auffälligkeiten ansehen":"View findings","Ähnliche Buchung gefunden":"Similar booking found","Ist dieselbe Transaktion":"Is the same transaction","Durch Transfer ersetzen":"Replace with transfer","Buchung durch Transfer ersetzt":"Booking replaced by transfer","MultiversX (EGLD)":"MultiversX (EGLD)","Lücken in Beständen":"Gaps in balances","Passende Buchungen":"Matching bookings","Alles in Ordnung. Zum Prüfen auf „Synchronisieren“ tippen.":"All good. Tap “Sync” to check.","Es gibt schon eine ähnliche Buchung bei diesem Wallet. Bitte prüfen, oder noch einmal auf Buchen tippen.":"There is already a similar booking for this wallet. Please check it, or tap Book again.","Hier sammelt die App alles, was du prüfen solltest: Buchungsvorschläge aus der Synchronisation, Abweichungen zwischen deinen Buchungen und dem echten Stand, Lücken und passende Buchungen.":"This is where the app collects everything you should check: booking proposals from syncing, differences between your bookings and the real balance, gaps and matching bookings.","Es wird nichts ohne dein Bestätigen gebucht.":"Nothing is booked without your confirmation.","Offene Punkte aus der Synchronisation stehen unten nach Wallet sortiert.":"Open items from syncing are listed below, sorted by wallet.","⟳ Synchronisieren fragt auf Knopfdruck den echten Stand der Adressen ab (nur bei Wallets mit Haken „Abfragen erlauben“). Was dabei auffällt, sammelt die App unter ⋯ → Auffälligkeiten: Buchungsvorschläge, Abweichungen und ähnliche Buchungen zum Verbinden. Gebucht wird nur, was du bestätigst.":"⟳ Sync queries the real balance of the addresses on button press (only for wallets with “allow querying” ticked). Whatever stands out is collected under ⋯ → Findings: booking proposals, differences and similar bookings to link. Only what you confirm is booked."});
 I18N.add({"⟳ Kurse":"⟳ Prices","⟳ Verlauf":"⟳ History","Kurse jetzt laden":"Load prices now","Kursverlauf aktualisieren":"Update price history"});
+I18N.add({"Benachrichtigungen":"Notifications","Keine Benachrichtigungen.":"No notifications.","Neue Auffälligkeit beim Synchronisieren":"New finding while syncing"});
 </script>
 <script src="ghk.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
@@ -511,7 +513,7 @@ let IMSK=0;
 /*UI*/
 const VIEWS=[['uebersicht','Übersicht'],['buchen','Buchen'],['verlauf','Verlauf'],['wallets','Wallets'],['steuer','Steuer']];
 let view='uebersicht',E=null,W=null,YR=null;const V={};
-let MENU=false,INFOK=null,XT=new Set(),WARNW=null,IMPV=null,XS=new Set(),YS=[],PLtry=0,HTry=0,UI={},LP={t:'',p:{}};
+let NOTI=false,MENU=false,INFOK=null,XT=new Set(),WARNW=null,IMPV=null,XS=new Set(),YS=[],PLtry=0,HTry=0,UI={},LP={t:'',p:{}};
 try{UI=JSON.parse(localStorage.getItem('krypto-ui')||'{}')||{}}catch(e){}try{LP=JSON.parse(localStorage.getItem('krypto-lp')||'null')||LP}catch(e){}
 const uiSave=()=>{try{localStorage.setItem('krypto-ui',JSON.stringify(UI))}catch(e){}};
 const tgl=(k,d)=>UI[k]===undefined?!!d:!!UI[k];
@@ -540,14 +542,35 @@ function gate(){if(!KB)return'';
 function render(){syncSave();const y0=window.scrollY||0,same=render.v===view;render.v=view;
   $('#tabs').innerHTML=VIEWS.map(([i,l])=>`<button class="${view===i||((view==='korr'||view==='auff')&&i==='wallets')?'on':''}" data-act="go" data-v="${i}">${l}</button>`).join('');
   $('#main').innerHTML=gate()||V[view]();
-  $('#menu').innerHTML=QOFF?qoffHtml():NETP!==null?netHtml():CGP?cgHtml():INFOK?infoHtml():KILL?killHtml():ADJ?adjHtml():SPAR?sparHtml():MENU?menuHtml():WARNW?warnHtml():'';
-  const R=calc(S.cfg.meth),h=holdings(R);$('#hsum').textContent=eur(h.ok.reduce((a,o)=>a+o.cost,0))+' investiert · '+S.cfg.meth;
+  $('#menu').innerHTML=NOTI?notiHtml():QOFF?qoffHtml():NETP!==null?netHtml():CGP?cgHtml():INFOK?infoHtml():KILL?killHtml():ADJ?adjHtml():SPAR?sparHtml():MENU?menuHtml():WARNW?warnHtml():'';
+  const R=calc(S.cfg.meth),h=holdings(R);ntScan(R);$('#hsum').textContent=eur(h.ok.reduce((a,o)=>a+o.cost,0))+' investiert · '+S.cfg.meth;
   if(window.scrollTo)window.scrollTo(0,same?y0:0);
   sbarInit();
   if(view==='uebersicht'||view==='wallets')ensurePrices();if(view==='uebersicht')ensureHist()}
 function sbarInit(){const t=$('#tbl'),b=$('#sbar');if(!t||!b||!t.addEventListener)return;const th=b.querySelector('i'),up=()=>{const w=t.clientWidth,sw=t.scrollWidth,o=sw>w+2;b.classList.toggle('on',o);if(!o)return;th.style.width=(w/sw*100)+'%';th.style.left=(t.scrollLeft/sw*100)+'%'};t.addEventListener('scroll',up,{passive:true});up();setTimeout(up,300)}
 function ensurePrices(){if(typeof fetch==='undefined')return;if(PLtry&&Date.now()-PLtry<3e5)return;if(LP.t&&Date.now()-Date.parse(LP.t)<18e5)return;PLtry=Date.now();loadPrices(true)}
 function ensureHist(){if(typeof fetch==='undefined'||HTry||!S.tx.length||(HP&&Date.now()-Date.parse(HP.t)<864e5))return;HTry=1;loadHist(true)}
+/* ---------- Benachrichtigungen (pro Gerät) ---------- */
+let NT=(()=>{try{return JSON.parse(localStorage.getItem('kb-notif')||'null')}catch(e){return null}})()||{list:[],seen:'',known:null,free:''};
+const ntSave=()=>{try{localStorage.setItem('kb-notif',JSON.stringify(NT))}catch(e){}};
+const ntUnread=()=>NT.list.filter(n=>n.t>NT.seen).length;
+function ntAdd(n){if(NT.list.some(x=>x.id===n.id))return;NT.list.unshift(Object.assign({t:new Date().toISOString()},n));NT.list=NT.list.slice(0,60)}
+function ntScan(R){let ch=false;
+  const cur=new Set();for(const id in PR)for(const it of (PR[id]||[]))cur.add('pr:'+it.k);
+  const ab=[];for(const id in CHK){const k=CHK[id];if(k&&!k.busy&&k.nd>0){const key='ab:'+id+':'+k.nd;cur.add(key);ab.push(key)}}
+  if(NT.known===null){NT.known=[...cur];ch=true}else{const kn=new Set(NT.known),nw=[...cur].filter(x=>!kn.has(x));
+    if(nw.length){const n=nw.length;ntAdd({id:'af'+Date.now(),k:'af',text:n===1?'Neue Auffälligkeit beim Synchronisieren':n+' neue Auffälligkeiten beim Synchronisieren',v:'auff'});ch=true}
+    if(nw.length||kn.size!==cur.size){NT.known=[...cur];ch=true}}
+  const today=new Date().toISOString().slice(0,10);
+  if(NT.free!==today){const from=NT.free||new Date(Date.now()-14*864e5).toISOString().slice(0,10),fr=[];
+    R.lots.forEach((arr,k)=>{const i=k.indexOf('|'),c=k.slice(i+1),w=k.slice(0,i),wl=S.wallets.find(y=>y.id===w);if(wl&&BAD.includes(wl.st))return;
+      for(const l of arr){if(l.s<1e-12||!l.d)continue;const f=addY(l.d);if(f>from&&f<=today)fr.push({c,s:l.s,d:l.d,i:l.i,f})}});
+    if(fr.length>6){ntAdd({id:'fr'+today,k:'free',text:fr.length+' Bestände sind ab jetzt steuerfrei (Haltefrist von einem Jahr erreicht)',v:'uebersicht'})}
+    else fr.forEach(x=>ntAdd({id:'fr'+x.i+x.f,k:'free',text:qty(x.s)+' '+x.c+' aus der Buchung vom '+dmy(x.d)+' sind ab jetzt steuerfrei',v:'verlauf',tx:x.i}));
+    NT.free=today;ch=true}
+  if(ch)ntSave();
+  const b=$('#bdg');if(b){const u=ntUnread();b.hidden=!u;b.textContent=u>9?'9+':u}}
+function notiHtml(){const L=NT.list;return`<div class="mbd" data-act="ntX"></div><div class="msh"><div style="padding:14px 14px 6px"><b>Benachrichtigungen</b></div>${L.length?L.map((n,i)=>`<button class="nti ${n.u?'new':''}" data-act="nt" data-n="${i}"><span class="nd"></span><span>${esc(n.text)}<small>${esc(n.t.slice(8,10)+'.'+n.t.slice(5,7)+'. '+new Date(n.t).toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'}))}</small></span></button>`).join(''):'<div class="empty" style="padding:20px">Keine Benachrichtigungen.</div>'}<div class="btns" style="padding:10px 14px"><button class="btn" data-act="ntX" style="flex:1">Schließen</button></div></div>`}
 function infoHtml(){return`<div class="mbd" data-act="infoX"></div><div class="msh"><div style="padding:14px"><div class="infotxt">${IT[INFOK]||''}</div><div class="btns"><button class="btn pri" data-act="infoX" style="flex:1">Verstanden</button></div></div></div>`}
 function menuHtml(){const it=[];it.push(['auff','Auffälligkeiten'+(NAUFF()?' ('+NAUFF()+')':'')]);
   if(view==='uebersicht')it.push(['prices','Kurse jetzt laden'],['hist','Kursverlauf aktualisieren']);
@@ -791,7 +814,7 @@ const introK=()=>{const noW=!S.wallets.length,noT=!S.tx.length;if(!(noW||noT)||U
   <div class="small muted">Wallets lassen sich jederzeit umbenennen, archivieren (ausgeblendet, Buchungen bleiben für die Steuer) oder zusammenführen.</div>
   <div class="btns">${noW?'<button class="btn pri" data-act="wNew">Erstes Wallet anlegen</button>':'<button class="btn pri" data-act="impOpen">Buchungen importieren</button><button class="btn" data-act="go" data-v="buchen">Von Hand buchen</button>'}<button class="btn ghost" data-act="introX">Ausblenden</button></div></div>`};
 const _vb0=V.buchen;V.buchen=()=>`<div class="seg" style="align-self:flex-start">${[['form','Eintragen'],['rec','Regelmäßig'],['import','Importieren']].map(([k,l])=>`<button class="${BM===k?'on':''}" data-act="bm" data-v="${k}">${l}</button>`).join('')}</div>`+(BM==='import'?V.import():BM==='rec'?recCard():_vb0());
-const APP_VER='4.5',APP_DATE='27.11.2026';
+const APP_VER='4.6',APP_DATE='27.11.2026';
 const _ue=V.uebersicht;V.uebersicht=()=>introK()+_ue();
 /* ---------- Regelmäßige Buchungen ---------- */
 const IVS={d:'täglich',w:'wöchentlich',w2:'alle 2 Wochen',m:'monatlich',q:'vierteljährlich',y:'jährlich'};
@@ -1122,6 +1145,9 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
   else if(a==='pplSave'){S.cfg.people=$('#ppl').value.split(',').map(x=>x.trim()).filter(Boolean);save();toast('Gespeichert')}
   else if(a==='copy'){const v=b.dataset.v,ok=()=>toast('Public Address kopiert');if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(ok,()=>prompt('Adresse kopieren:',v));else prompt('Adresse kopieren:',v)}
   else if(a==='info'){INFOK=b.dataset.k;MENU=false;WARNW=null;render()}
+  else if(a==='bell'){NT.list.forEach(n=>{n.u=n.t>NT.seen});NT.seen=new Date().toISOString();ntSave();NOTI=true;MENU=false;render()}
+  else if(a==='ntX'){NOTI=false;render()}
+  else if(a==='nt'){const n=NT.list[+b.dataset.n];NOTI=false;if(n){if(n.tx){const t=S.tx.find(x=>x.i===n.tx);if(t){XT.add(n.tx);UI.mo=UI.mo||{};UI.mo[t.d.slice(0,7)]=true}}go(n.v||'uebersicht');if(n.tx)setTimeout(()=>{const e=document.querySelector('[data-id="'+n.tx+'"]');if(e&&e.scrollIntoView)e.scrollIntoView({block:'center'})},50)}else render()}
   else if(a==='infoX'){INFOK=null;render()}
   else if(a==='undo'){if(UN){UN();UN=null;$('#toast').classList.remove('on')}}
     else if(a==='incEur'){S.cfg.incEur=!S.cfg.incEur;save();render()}

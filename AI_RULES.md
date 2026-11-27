@@ -142,6 +142,8 @@ Bei jeder Anforderung zuerst klären, ob sie betrifft:
 - **Das „i“ (Erklärung) sitzt überall ganz rechts**: in Karten-Überschriften, in der Zeile mit Liste/Karten (Verlauf), bei Gesamtwert, bei Wallets rechts neben „Synchronisieren“. Keine eigene Zeile „Hilfe zu diesem Tab“ mehr im Krypto-Buch.
 - **Kurse:** „⟳ Kurse“ (schnell, aktuelle Kurse) steht bei Gesamtwert, „⟳ Verlauf“ (langsam, Kursverlauf für die Grafik) in der Zeile mit 1W/1M/6M/1J/Max.
 - **Betrag und Prozent** werden nur durch ein Leerzeichen getrennt, nie durch einen Punkt „·“ (wirkt wie ein Fehler). Gilt in beiden Apps.
+- **Kopfzeile in beiden Apps:** Einstellungen ist überall das **Zahnrad** (ganz rechts). Links davon sitzt der Wechsel-Knopf („‹ Haushalt“ / „Krypto ›“, Aussehen unverändert). Im Krypto-Buch stehen links davon noch ⋯ und die Glocke.
+- **Benachrichtigungen (Glocke, Krypto-Buch):** rote Zahl für Ungelesenes, beim Antippen verschwindet die Zahl, die Liste bleibt abrufbar. Einträge springen zur Sache (Auffälligkeiten, Buchung, Übersicht). Anlass: neue Auffälligkeiten nach dem Synchronisieren und Bestände, die steuerfrei werden. Nur sparsam benachrichtigen, nie pro Kleinigkeit (Spam vermeiden). Die Liste liegt pro Gerät.
 - **Spam** muss sich überall markieren und wieder freigeben lassen.
 - **NFTs und Sonstiges** zählen nicht in Gesamtwert und Anteile, bleiben aber für die Steuer erhalten.
 - **Kategorien** werden in zwei Schritten gewählt: Ausgabe, Einnahme, Intern, dann die passenden Kategorien.

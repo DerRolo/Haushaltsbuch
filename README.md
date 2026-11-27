@@ -63,6 +63,10 @@ Für den Alltag: schnell buchen, übersichtlich auswerten, nichts doppelt pflege
 
 Ein vollständiges Buch für deine Coins, gebaut für die deutsche Steuer, aber auch einfach als Übersicht nutzbar.
 
+### Benachrichtigungen (Glocke)
+- Oben rechts zeigt die **Glocke** mit roter Zahl, was neu ist: neue **Auffälligkeiten** nach dem Synchronisieren und Coins, die **ab jetzt steuerfrei** sind (Haltefrist von einem Jahr erreicht). Antippen öffnet die Liste, die Zahl verschwindet. Ein Eintrag führt direkt zur Buchung oder Ansicht. Die Liste gilt pro Gerät und prüft beim Öffnen der App.
+- **Einstellungen** sind in beiden Apps das **Zahnrad**. Der Wechsel zwischen Haushalt und Krypto sitzt direkt links davon.
+
 ### Kurse
 - In der Übersicht lädt **„⟳ Kurse“** neben dem Gesamtwert die aktuellen Kurse (schnell). **„⟳ Verlauf“** neben 1W/1M/6M/1J/Max holt den Kursverlauf für die Grafik (dauert länger).
 - Das **„i“** mit der Erklärung steht überall ganz rechts.
