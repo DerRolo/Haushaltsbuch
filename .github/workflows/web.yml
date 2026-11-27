@@ -1,7 +1,11 @@
 name: Web-Version für den PC
 
+# Läuft erst, wenn der Android-Build fertig ist (egal ob erfolgreich oder fehlgeschlagen,
+# nur nicht abgebrochen), damit beide nie gleichzeitig laufen. Von Hand startbar bleibt es auch.
 on:
-  push:
+  workflow_run:
+    workflows: ["Android-App bauen"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -12,16 +16,19 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
