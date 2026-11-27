@@ -14,7 +14,7 @@ function ghSave(c){localStorage.setItem(LS_CFG,JSON.stringify(c))}
 function ghClear(){try{const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('kbd:')||k==='kbidx'||k===LS_CFG))keys.push(k)}keys.forEach(k=>localStorage.removeItem(k))}catch(e){}}
 const makeCode=c=>'KB1.'+b64e(JSON.stringify({o:c.owner,r:c.repo,t:c.token}));
 function parseCode(s){
-  s=String(s||'').trim();if(!s.startsWith('KB1.'))throw new Error('Das ist kein gültiger Kopplungscode.');
+  s=String(s||'').trim();if(s.startsWith('HB1.')){const h=JSON.parse(b64d(s.slice(4)));if(h.o&&h.t)return{owner:h.o,repo:'krypto-daten',token:h.t}}if(!s.startsWith('KB1.'))throw new Error('Das ist kein gültiger Kopplungscode.');
   const o=JSON.parse(b64d(s.slice(4)));if(!o.o||!o.r||!o.t)throw new Error('Der Kopplungscode ist unvollständig.');
   return{owner:o.o,repo:o.r,token:o.t};
 }
