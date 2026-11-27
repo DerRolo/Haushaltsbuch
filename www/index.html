@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0E6B5B"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0}body{font:14px/1.45 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}#fab{position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:24;border-radius:999px;padding:13px 24px;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.28)}#fab[hidden]{display:none}@media(min-width:860px){#fab{bottom:24px}}
+.ktype{display:flex;width:100%;margin-bottom:8px}.ktype button{flex:1}
 </style>
 </head><body>
 <title>Haushaltsbuch</title>
@@ -245,6 +246,7 @@ I18N.add({
 "Wirklich":"Really","Gruppe ":"Group","Alltag":"Alltag","oder":"or","und":"and","heute":"today","weiter":"next","zurück":"back","{} vor":"{} forward","{} zurück":"{} back","Aktive Konten":"Active accounts","(Archiv)":"(archived)","Konto ":"Account"
 });
 I18N.add({"Zusatz, Steuer, Beleg":"Extra tags, tax, receipt"});
+I18N.add({"Bitte eine Kategorie wählen":"Please choose a category"});
 
 (function(){var W=[["Mo","Mon"],["Di","Tue"],["Mi","Wed"],["Do","Thu"],["Fr","Fri"],["Sa","Sat"],["So","Sun"]],o={};W.forEach(function(w){o[w[0]+' {}']=w[1]+' {}'});I18N.add(o)})();
 I18N.add({
@@ -487,10 +489,13 @@ function history(){
 const FC={};
 const activeKats=sel=>{const l=CFG().kats.filter(k=>k.a!==false||k.n===sel);return l};
 const activeZus=sel=>CFG().zusatz.filter(k=>k.a!==false||(sel&&sel.has(k.n)));
+const KGRP=t=>t==='rue'?'ein':t;
 function chipsK(p){
-  const sel=FC[p].k,l=activeKats(sel);let h='';
-  for(const t of ['aus','ein','rue','int']){const g=l.filter(k=>k.typ===t);if(!g.length)continue;
-    h+=`<div class="grp">${TYP_LABEL[t]}</div><div class="chips">`+g.map(k=>`<button type="button" class="chip ${k.n===sel?'on':''}" data-act="ck" data-p="${p}" data-v="${esc(k.n)}">${esc(k.n)}</button>`).join('')+'</div>'}
+  const sel=FC[p].k,l=activeKats(sel),cur=l.find(k=>k.n===sel),grp=cur?KGRP(cur.typ):(FC[p].t||'aus');
+  let h='<div class="seg ktype">'+[['aus','Ausgabe'],['ein','Einnahme'],['int','Intern']].map(([t,n])=>`<button type="button" class="${grp===t?'on':''}" data-act="kt" data-p="${p}" data-v="${t}">${n}</button>`).join('')+'</div>';
+  const types=grp==='ein'?['ein','rue']:[grp];
+  for(const t of types){const g=l.filter(k=>k.typ===t);if(!g.length)continue;
+    h+=(grp==='ein'&&t==='rue'?`<div class="grp">${TYP_LABEL[t]}</div>`:'')+`<div class="chips">`+g.map(k=>`<button type="button" class="chip ${k.n===sel?'on':''}" data-act="ck" data-p="${p}" data-v="${esc(k.n)}">${esc(k.n)}</button>`).join('')+'</div>'}
   return h;
 }
 function chipsZ(p){const sel=FC[p].z;return activeZus(sel).map(k=>`<button type="button" class="chip ${sel.has(k.n)?'on':''}" data-act="cz" data-p="${p}" data-v="${esc(k.n)}">${esc(k.n)}</button>`).join('')}
@@ -525,6 +530,7 @@ function readEntry(p,id){
   if(!d){toast('Datum unvollständig oder ungültig');return null}
   if(isNaN(b)){toast('Bitte einen Betrag angeben');return null}
   if(!v||!n){toast('Bitte „Von“ und „Nach“ ausfüllen');return null}
+  if(!FC[p].k&&!id){toast('Bitte eine Kategorie wählen');return null}
   const e={i:id||uid('e'),d,v,n,b:Math.round(b*100)/100,t:$('#'+p+'-info').value.trim(),k:FC[p].k,ts:Date.now()};
   if(FC[p].z.size)e.z=[...FC[p].z];
   let fz=$('#'+p+'-fz').value;const ak=$('#'+p+'-ak').value,km=parseNum($('#'+p+'-km').value);
@@ -1032,7 +1038,7 @@ function startCard(){
 const startUpd=()=>{const sc=$('#startcard');if(sc)sc.innerHTML=startCard()};
 const _ve=V.eintragen;V.eintragen=()=>'<div id="startcard">'+startCard()+'</div>'+_ve();
 const _vk=V.konten;V.konten=()=>startCard()+_vk();
-const APP_VER='3.6',APP_DATE='27.11.2026';
+const APP_VER='3.7',APP_DATE='27.11.2026';
 const verCard=()=>`<div class="vers">Haushaltsbuch · Version ${APP_VER} (${APP_DATE})</div>`;
 const langCard=()=>`<div class="card flat"><div style="padding:12px 14px"><h3>Sprache</h3><div class="btns" style="margin-top:8px">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button class="btn sm ${(window.I18N&&I18N.lang())===k?'pri':'ghost'}" data-act="lang" data-v="${k}">${l}</button>`).join('')}</div></div></div>`;
 V.einstellungen=()=>`${ghCard()}${langCard()}${verCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>
@@ -1222,6 +1228,7 @@ function backup(){const o={config:CFG(),buchungen:S.asc,sprit:Object.fromEntries
 const A={
   go:t=>go(t.dataset.v),
   close:()=>closeModal(),
+  kt:t=>{const p=t.dataset.p,v=t.dataset.v,cur=activeKats(FC[p].k).find(k=>k.n===FC[p].k);FC[p].t=v;if(cur&&KGRP(cur.typ)!==v)FC[p].k='';FC[p].touched=true;$('#'+p+'-kc').innerHTML=chipsK(p)},
   ck:t=>{const p=t.dataset.p;FC[p].k=t.dataset.v;FC[p].touched=true;$('#'+p+'-kc').innerHTML=chipsK(p)},
   cz:t=>{const p=t.dataset.p,s=FC[p].z,v=t.dataset.v;s.has(v)?s.delete(v):s.add(v);FC[p].touched=true;$('#'+p+'-zc').innerHTML=chipsZ(p)},
   tpl:t=>{const e=S.tpls[+t.dataset.i];FC.f={k:e.k,z:new Set(e.z||[]),touched:true};$('#f-von').value=e.v;$('#f-nach').value=e.n;if(e.st)$('#f-st').value=e.st;$('#f-kc').innerHTML=chipsK('f');$('#f-zc').innerHTML=chipsZ('f');$('#f-amt').focus()},
