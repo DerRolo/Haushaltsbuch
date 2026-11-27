@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0E6B5B"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0}body{font:14px/1.45 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0}body{font:14px/1.45 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}#fab{position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:24;border-radius:999px;padding:13px 24px;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.28)}#fab[hidden]{display:none}@media(min-width:860px){#fab{bottom:24px}}
+</style>
 </head><body>
 <title>Haushaltsbuch</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
@@ -243,6 +244,7 @@ I18N.add({
 "Häufig":"Frequent","Der Name „{}“ wird schon für ein Konto oder einen Empfänger/eine Quelle benutzt. Bitte einen anderen wählen.":"The name “{}” is already used for an account or a recipient/source. Please choose another.","“ wird schon für ein Konto oder einen Empfänger/eine Quelle benutzt. Bitte einen anderen wählen.":"” is already used for an account or a recipient/source. Please choose another.","Der Name „":"The name “",
 "Wirklich":"Really","Gruppe ":"Group","Alltag":"Alltag","oder":"or","und":"and","heute":"today","weiter":"next","zurück":"back","{} vor":"{} forward","{} zurück":"{} back","Aktive Konten":"Active accounts","(Archiv)":"(archived)","Konto ":"Account"
 });
+I18N.add({"Zusatz, Steuer, Beleg":"Extra tags, tax, receipt"});
 
 (function(){var W=[["Mo","Mon"],["Di","Tue"],["Mi","Wed"],["Do","Thu"],["Fr","Fri"],["Sa","Sat"],["So","Sun"]],o={};W.forEach(function(w){o[w[0]+' {}']=w[1]+' {}'});I18N.add(o)})();
 I18N.add({
@@ -493,6 +495,13 @@ function chipsK(p){
 }
 function chipsZ(p){const sel=FC[p].z;return activeZus(sel).map(k=>`<button type="button" class="chip ${sel.has(k.n)?'on':''}" data-act="cz" data-p="${p}" data-v="${esc(k.n)}">${esc(k.n)}</button>`).join('')}
 function stOpts(sel){return '<option value="">– nicht für die Steuer –</option>'+CFG().steuerKats.filter(k=>k.a!==false||k.n===sel).map(k=>`<option ${k.n===sel?'selected':''}>${esc(k.n)}</option>`).join('')}
+function keepOpen(k){try{return localStorage.getItem('hb-det-'+k)==='1'}catch(e){return false}}
+document.addEventListener('toggle',ev=>{const d=ev.target;if(d&&d.dataset&&d.dataset.keep){try{localStorage.setItem('hb-det-'+d.dataset.keep,d.open?'1':'0')}catch(e){}}setTimeout(fabUpdate,0)},true);
+function fabUpdate(){let f=document.getElementById('fab');const sb=S.view==='eintragen'?document.querySelector('#main form .btn.pri[type=submit]'):null;
+  if(!sb){if(f)f.hidden=true;return}
+  if(!f){f=document.createElement('button');f.id='fab';f.type='button';f.className='btn pri';f.addEventListener('click',()=>{const b=document.querySelector('#main form .btn.pri[type=submit]');if(b){const fm=b.closest('form');if(fm.requestSubmit)fm.requestSubmit(b);else b.click()}});document.body.appendChild(f)}
+  f.textContent=sb.textContent.trim()||'Buchen';const r=sb.getBoundingClientRect();f.hidden=r.top<window.innerHeight-8&&r.bottom>0}
+window.addEventListener('scroll',fabUpdate,{passive:true});window.addEventListener('resize',fabUpdate);
 function entryFields(p,e){
   FC[p]={k:e.k||'',z:new Set(e.z||[]),touched:!!e.i};
   return `${dateField(p,p==='s'?'Erste Buchung am':'Datum',e.d||DSEL())}
@@ -501,14 +510,15 @@ function entryFields(p,e){
   <div class="field"><label for="${p}-nach">Nach (Konto / Empfänger)</label><input id="${p}-nach" data-ac="1" autocomplete="off" data-p="${p}" value="${esc(e.n||'')}"></div></div>
   <div class="field"><label for="${p}-info">Info (optional)</label><input id="${p}-info" autocomplete="off" value="${esc(e.t||'')}"></div>
   <div class="hint" id="${p}-prev"></div>
-  <details id="${p}-ad" ${e.fz||e.ak?'open':''}><summary>Auto / Scheckheft</summary>
+  <details id="${p}-ad" data-keep="ad" ${e.fz||e.ak||keepOpen('ad')?'open':''}><summary>Auto / Scheckheft</summary>
     <div class="row2"><div class="field"><label for="${p}-fz">Fahrzeug</label><select id="${p}-fz"><option value="">– keins –</option>${vehicles().filter(v=>v.a!==false||v.id===e.fz).map(v=>`<option value="${v.id}" ${v.id===e.fz?'selected':''}>${esc(v.n)}</option>`).join('')}</select></div>
     <div class="field"><label for="${p}-ak">Art</label><select id="${p}-ak"><option value="">– keine –</option>${[...AK,...(e.ak==='Sprit'?['Sprit']:[])].map(a=>`<option ${a===e.ak?'selected':''}>${esc(a)}</option>`).join('')}</select></div></div>
     <div class="field"><label for="${p}-km">Kilometerstand (optional)</label><input id="${p}-km" inputmode="numeric" autocomplete="off" value="${e.km!=null?e.km:''}"></div></details>
   <div class="field"><label>Kategorie</label><div id="${p}-kc">${chipsK(p)}</div></div>
+  <details id="${p}-mo" data-keep="mo" ${(e.z&&e.z.length)||e.st||e.bl||keepOpen('mo')?'open':''}><summary>Zusatz, Steuer, Beleg</summary>
   <div class="field"><label>Zusatz (optional, mehrere möglich)</label><div class="chips" id="${p}-zc">${chipsZ(p)}</div></div>
   <div class="row2"><div class="field"><label for="${p}-st">Für die Steuererklärung</label><select id="${p}-st" data-act-change="stsel" data-p="${p}">${stOpts(e.st||'')}</select></div>
-  <div class="field"><label for="${p}-bl">Beleg / Hinweis</label><input id="${p}-bl" autocomplete="off" placeholder="z. B. Rechnung im Ordner" value="${esc(e.bl||'')}"></div></div>`;
+  <div class="field"><label for="${p}-bl">Beleg / Hinweis</label><input id="${p}-bl" autocomplete="off" placeholder="z. B. Rechnung im Ordner" value="${esc(e.bl||'')}"></div></div></details>`;
 }
 function readEntry(p,id){
   const d=getDate(p),b=parseNum($('#'+p+'-amt').value),v=$('#'+p+'-von').value.trim(),n=$('#'+p+'-nach').value.trim();
@@ -566,7 +576,7 @@ function render(){
   if(!S.booted){m.innerHTML='<div class="empty">Lade Daten …</div>';return}
   m.innerHTML=tabInfo()+V[S.view]();
   if(AFTER[S.view])AFTER[S.view]();
-  window.scrollTo(0,0);
+  window.scrollTo(0,0);fabUpdate();
 }
 function refresh(){
   const act=document.activeElement;
@@ -1022,7 +1032,7 @@ function startCard(){
 const startUpd=()=>{const sc=$('#startcard');if(sc)sc.innerHTML=startCard()};
 const _ve=V.eintragen;V.eintragen=()=>'<div id="startcard">'+startCard()+'</div>'+_ve();
 const _vk=V.konten;V.konten=()=>startCard()+_vk();
-const APP_VER='3.5',APP_DATE='27.11.2026';
+const APP_VER='3.6',APP_DATE='27.11.2026';
 const verCard=()=>`<div class="vers">Haushaltsbuch · Version ${APP_VER} (${APP_DATE})</div>`;
 const langCard=()=>`<div class="card flat"><div style="padding:12px 14px"><h3>Sprache</h3><div class="btns" style="margin-top:8px">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button class="btn sm ${(window.I18N&&I18N.lang())===k?'pri':'ghost'}" data-act="lang" data-v="${k}">${l}</button>`).join('')}</div></div></div>`;
 V.einstellungen=()=>`${ghCard()}${langCard()}${verCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>
