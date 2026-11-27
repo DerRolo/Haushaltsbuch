@@ -61,10 +61,19 @@ jobs:
       - name: Web-App ins Projekt kopieren
         run: npx cap sync android
 
-      - name: Gleichen Signaturschlüssel für jedes Update verwenden
+      - name: Immer denselben Signaturschlüssel verwenden
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
         run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "FEHLER: Das Secret KEYSTORE_B64 fehlt (Settings > Secrets and variables > Actions)."
+            echo "Ohne festen Schlüssel lässt sich die App nicht über die alte installieren."
+            exit 1
+          fi
           mkdir -p ~/.android
-          cp debug.keystore ~/.android/debug.keystore
+          echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+          echo "Fingerabdruck des Signaturschlüssels (muss bei jedem Build gleich sein):"
+          keytool -list -keystore ~/.android/debug.keystore -storepass android | grep -i "fingerprint\|SHA" || true
 
       - name: Versionsnummer setzen
         run: |
