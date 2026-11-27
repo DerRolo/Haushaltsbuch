@@ -250,6 +250,15 @@ I18N.add({
 "sonst um {} bei „{}“":"otherwise around {} at “{}”","Betrag ist 0":"Amount is 0","Betrag ist negativ":"Amount is negative","Betrag {}":"Amount {}","Datum liegt weit in der Zukunft":"Date is far in the future",
 "Buchungen werden angepasst. Zum Bestätigen noch einmal auf Speichern tippen.":"Entries will be updated. Tap Save once more to confirm.","Durchschnitt über {} Monate seit der ersten Kostenbuchung.":"Average over {} months since the first cost entry.","Erste Buchung am":"First entry on","Erste Buchung am {}":"First entry on {}","Buchungen ·":"Entries ·","Noch nichts über dieses Formular eingetragen.":"Nothing entered through this form yet.","Noch keine Buchungen.":"No entries yet.","Einträge zu „{}“":"Entries for “{}”"
 });
+I18N.add({
+"Willkommen im Haushaltsbuch":"Welcome to the Budget Book","So legst du los:":"How to get started:","1. Konten anlegen":"1. Create accounts","2. Erste Buchung eintragen":"2. Enter your first entry","3. Regelmäßiges anlegen":"3. Set up recurring items",
+"Ein Konto ist ein Ort, an dem Geld liegt: Girokonto, Bargeld, PayPal, Depot. Beim Anlegen gibst du den":"An account is a place where money is: checking account, cash, PayPal, brokerage. When creating it you enter the","aktuellen Stand":"current balance","ein. Er wird als Ausgleichsbuchung angelegt und zählt":". It is created as an adjustment entry and counts","weder als Einnahme noch als Ausgabe":"neither as income nor as an expense",
+"Im Tab „Eintragen“: Von (woher das Geld kommt), Nach (wohin es geht), Betrag und Kategorie. Mit dem „i“ oben bekommst du eine Erklärung.":"On the “Enter” tab: From (where the money comes from), To (where it goes), amount and category. The “i” at the top gives you an explanation.","Miete, Gehalt und Abos trägst du einmal im Tab „Regelmäßig“ ein, dann bucht die App sie automatisch.":"Enter rent, salary and subscriptions once on the “Recurring” tab and the app books them automatically.",
+"Konten kannst du jederzeit umbenennen (alle alten Buchungen werden automatisch mit umbenannt) oder archivieren, wenn du das Konto nicht mehr hast: Es verschwindet aus den Listen, deine Daten bleiben erhalten.":"You can rename accounts at any time (all old entries are renamed automatically) or archive them when you no longer have the account: it disappears from the lists, your data is kept.",
+"Erstes Konto anlegen":"Create first account","Erste Buchung eintragen":"Enter first entry","Ausblenden":"Hide",
+"Tipp: Lege zuerst die Konten an, die du hast (zum Beispiel Girokonto und Bargeld). Der Stand, den du eingibst, ist dein Startsaldo und zählt nicht als Einnahme.":"Tip: first create the accounts you have (for example checking account and cash). The balance you enter is your opening balance and does not count as income."
+});
+I18N.add({"{} 1. Konten anlegen":"{} 1. Create accounts","{} 2. Erste Buchung eintragen":"{} 2. Enter your first entry","{} 3. Regelmäßiges anlegen":"{} 3. Set up recurring items"});
 </script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
@@ -560,7 +569,7 @@ function refresh(){
   const typing=act&&act.closest&&act.closest('#main')&&/^(INPUT|SELECT|TEXTAREA)$/.test(act.tagName);
   updateHeader();updateLists();
   if(!S.booted)return;
-  if(S.view==='eintragen'){fillEintragen();return}
+  if(S.view==='eintragen'){startUpd();fillEintragen();return}
   if(S.view==='buchungen'){fillBuchungen();return}
   if(typing&&!$('#modal.open')){S.pending=true;return}
   S.pending=false;
@@ -995,6 +1004,20 @@ function catList(list,key,withTyp){
   <form class="kv" data-form="catAdd" data-l="${list}" style="grid-template-columns:1fr ${withTyp?'auto ':''}auto"><input name="n" placeholder="Neu hinzufügen" aria-label="Neuer Name" required>${withTyp?`<select name="typ" aria-label="Art" style="width:auto">${Object.entries(TYP_LABEL).map(([k,v])=>`<option value="${k}" ${k==='aus'?'selected':''}>${v}</option>`).join('')}</select>`:''}<button class="btn sm pri" type="submit">Hinzufügen</button></form>
   ${sg.length?`<div style="padding:10px 14px"><div class="small muted" style="margin-bottom:6px">Vorschläge zum Hinzufügen:</div><div class="chips">${sg.map(x=>`<button type="button" class="chip" data-act="catSug" data-l="${list}" data-n="${esc(x.n)}" data-typ="${x.typ||'aus'}">+ ${esc(x.n)}</button>`).join('')}</div></div>`:''}</div>`;
 }
+const introDone=()=>{try{return localStorage.getItem('hb-intro')==='1'}catch(e){return false}};
+function startCard(){
+  const nk=konten().filter(k=>k.a!==false).length,ne=S.asc.filter(e=>e.k!=='Ausgleich').length;
+  if(introDone()&&nk>0)return'';if(nk>0&&ne>0)return'';
+  const ck=d=>d?'✓':'•';
+  return`<div class="card"><h3>Willkommen im Haushaltsbuch</h3><div class="small muted">So legst du los:</div>
+  <div class="small"><b>${ck(nk>0)} 1. Konten anlegen</b><br>Ein Konto ist ein Ort, an dem Geld liegt: Girokonto, Bargeld, PayPal, Depot. Beim Anlegen gibst du den <b>aktuellen Stand</b> ein. Er wird als Ausgleichsbuchung angelegt und zählt <b>weder als Einnahme noch als Ausgabe</b>.</div>
+  <div class="small"><b>${ck(ne>0)} 2. Erste Buchung eintragen</b><br>Im Tab „Eintragen“: Von (woher das Geld kommt), Nach (wohin es geht), Betrag und Kategorie. Mit dem „i“ oben bekommst du eine Erklärung.</div>
+  <div class="small"><b>• 3. Regelmäßiges anlegen</b><br>Miete, Gehalt und Abos trägst du einmal im Tab „Regelmäßig“ ein, dann bucht die App sie automatisch.</div>
+  <div class="small muted">Konten kannst du jederzeit umbenennen (alle alten Buchungen werden automatisch mit umbenannt) oder archivieren, wenn du das Konto nicht mehr hast: Es verschwindet aus den Listen, deine Daten bleiben erhalten.</div>
+  <div class="btns">${nk===0?'<button class="btn pri" data-act="kNew">Erstes Konto anlegen</button>':'<button class="btn pri" data-act="go" data-v="eintragen">Erste Buchung eintragen</button>'}${nk>0?'<button class="btn ghost" data-act="introX">Ausblenden</button>':''}</div></div>`}
+const startUpd=()=>{const sc=$('#startcard');if(sc)sc.innerHTML=startCard()};
+const _ve=V.eintragen;V.eintragen=()=>'<div id="startcard">'+startCard()+'</div>'+_ve();
+const _vk=V.konten;V.konten=()=>startCard()+_vk();
 const langCard=()=>`<div class="card flat"><div style="padding:12px 14px"><h3>Sprache</h3><div class="btns" style="margin-top:8px">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button class="btn sm ${(window.I18N&&I18N.lang())===k?'pri':'ghost'}" data-act="lang" data-v="${k}">${l}</button>`).join('')}</div></div></div>`;
 V.einstellungen=()=>`${ghCard()}${langCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>
 <div class="card flat"><div style="padding:12px 14px"><h3>Zusatz-Kategorien ${ib('zusatz')}</h3></div>${catList('zusatz','zusatz',false)}</div>
@@ -1038,7 +1061,7 @@ function modalKonto(name){
     <div class="row2">${fld('ko-g','Gruppe',k.g||'','list="dl-groups"')}${isFrei()?'':fld('ko-s','Startsaldo am '+pd(CFG().stichtag),numIn(k.start||0),'inputmode="decimal"')}</div>
     <div class="btns"><button class="btn" type="submit">Speichern</button><button class="btn" type="button" data-act="kTog" data-n="${esc(k.n)}">${k.a===false?'Wieder aktivieren':'Archivieren'}</button><button class="btn dng" type="button" data-act="kDel" data-confirm="1" data-n="${esc(k.n)}">Löschen</button><button class="btn ghost" type="button" data-act="close">Schließen</button></div><div class="small muted">Löschen geht nur, wenn das Konto keine Buchungen hat.</div>${k.a!==false&&Math.abs(bal)>0.005?'<div class="small muted">Archivierte Konten zählen nicht mehr zum Gesamtvermögen. Der Saldo bleibt gespeichert.</div>':''}</form>`);
   }else{
-    openModal(`<h2>Neues Konto</h2><form data-form="kontoNew" style="display:flex;flex-direction:column;gap:12px">${fld('ko-n','Name','','required')}<div class="row2">${fld('ko-g','Gruppe','Alltag','list="dl-groups"')}${fld('ko-s','Aktueller Stand in €','0','inputmode="decimal"')}</div><div class="small muted">Der Stand wird als Ausgleichsbuchung von heute angelegt.</div>${btnRow()}</form>`);
+    openModal(`<h2>Neues Konto</h2>${konten().length?'':'<div class="small muted">Tipp: Lege zuerst die Konten an, die du hast (zum Beispiel Girokonto und Bargeld). Der Stand, den du eingibst, ist dein Startsaldo und zählt nicht als Einnahme.</div>'}<form data-form="kontoNew" style="display:flex;flex-direction:column;gap:12px">${fld('ko-n','Name','','required')}<div class="row2">${fld('ko-g','Gruppe','Alltag','list="dl-groups"')}${fld('ko-s','Aktueller Stand in €','0','inputmode="decimal"')}</div><div class="small muted">Der Stand wird als Ausgleichsbuchung von heute angelegt.</div>${btnRow()}</form>`);
   }
 }
 function modalFahrt(id){
@@ -1219,6 +1242,7 @@ const A={
   sNew:()=>modalFill(null),sEdit:t=>modalFill(t.dataset.d),vNew:()=>modalVehicle(),vArch:()=>{S.sv.arch=!S.sv.arch;render()},
   vToggle:t=>{const v=vehicles().find(x=>x.id===t.dataset.id);v.a=v.a===false?true:false;saveCfg();S.sv.id='';render()},
   fillDel:t=>{if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich löschen?';return}const v=curVeh(),d=$('[data-form=fillSave]').dataset.d;S.sprit.set(v.id,(S.sprit.get(v.id)||[]).filter(x=>x.d!==d));saveSprit(v.id);closeModal();refresh()},
+  introX:()=>{try{localStorage.setItem('hb-intro','1')}catch(e){}render()},
   lang:t=>{I18N.set(t.dataset.v);render()},
   info:t=>{const i=(window.I18N&&I18N.lang()==='en'&&INFO_EN[t.dataset.k])||INFO[t.dataset.k];if(i)openModal(`<h2>${esc(i.t)}</h2><div class="infotxt">${i.h}</div><div class="btns" style="margin-top:14px"><button class="btn pri" data-act="close" style="flex:1">Verstanden</button></div>`)},
   catDel:t=>{
