@@ -109,6 +109,11 @@ tfoot td{font-weight:700}
 .dtrow{display:flex;gap:4px;align-items:stretch}.dtrow input{flex:1;min-width:0;text-align:center;padding-left:2px;padding-right:2px;font-size:14px}.dtrow .btn{min-width:28px;padding:0 4px;min-height:0;font-size:16px}
 .dt3{display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:6px}.dcol{display:flex;gap:2px;align-items:stretch;min-width:0}.dcol input{flex:1;min-width:0;width:100%;text-align:center;padding:0 2px;font-size:15px}.dcol .btn{min-width:26px;padding:0 3px;min-height:38px;font-size:17px;line-height:1}
 .lnk{background:none;border:0;color:var(--accent);font-size:12px;font-weight:600;padding:0 0 0 6px;text-decoration:underline}
+.ibtn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font:italic 700 15px Georgia,serif;padding:0;margin-left:auto;cursor:pointer;flex:none}
+h3 .ibtn,h2 .ibtn{margin-left:8px;vertical-align:middle}
+.tabinfo{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-bottom:8px}
+.infotxt p,.infotxt h3{margin:0 0 10px}.infotxt h3{margin-top:14px;font-size:15px}
+.ex{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 12px}.exr{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px}.exv{flex:none;min-width:96px;max-width:110px;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-weight:600;background:var(--surface)}.exa{color:var(--muted)}
 .acw{position:relative}
 .ac{position:absolute;left:0;right:0;top:100%;z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-top:2px;box-shadow:0 6px 18px rgba(0,0,0,.18);max-height:260px;overflow:auto}
 .aci{padding:9px 12px;font-size:14px;cursor:pointer}.aci.on{background:var(--accent);color:var(--accent-ink)}
@@ -128,8 +133,7 @@ summary{cursor:pointer;font-weight:500}
     <div><h1>Haushaltsbuch</h1><div class="sum" id="hsum">Lade Daten …</div></div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
       <div class="sync wait" id="sync"><i></i><span>verbinde …</span></div>
-      <button class="btn sm ghost" data-act="go" data-v="einstellungen">Einstellungen</button>
-      <a class="btn sm ghost" href="krypto.html" style="text-decoration:none">Krypto ›</a>
+      <div style="display:flex;gap:6px"><button class="btn sm ghost" data-act="go" data-v="einstellungen">Einstellungen</button><a class="btn sm ghost" href="krypto.html" style="text-decoration:none">Krypto ›</a></div>
     </div>
   </header>
   <nav class="tabs" id="tabs"></nav>
@@ -213,11 +217,49 @@ function updPrev(p){
   el.textContent=iso?WD[new Date(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10)).getDay()]+' '+pd(iso)+(isNaN(b)?'':' · '+eur(b))+(v||n?' · '+(v||'?')+' → '+(n||'?'):''):'Datum unvollständig';
 }
 
+/* ---------- Hilfe (i) ---------- */
+const ib=k=>`<button type="button" class="ibtn" data-act="info" data-k="${k}" aria-label="Erklärung" title="Erklärung">i</button>`;
+const tabInfo=()=>INFO[S.view]&&S.view!=='eintragen'?`<div class="tabinfo"><span class="small muted">Hilfe zu diesem Tab</span>${ib(S.view)}</div>`:'';
+const EX=(v,t)=>`<div class="exr"><span class="exv">${v}</span><span class="exa">◀ ${t}</span></div>`;
+const INFO={
+eintragen:{t:'So trägst du eine Buchung ein',h:`<p>Beispiel: Du kaufst bei Rewe für 23,45 € ein und zahlst mit PayPal.</p>
+<div class="ex">${EX('20.11.2026','Datum. Mit − / + den Tag ändern, das Jahr bleibt stehen')}${EX('23,45','Betrag in Euro')}${EX('PayPal','Von: aus welchem Konto das Geld geht')}${EX('Rewe','Nach: wer das Geld bekommt')}${EX('Spaßkosten','Kategorie: wofür? (genau eine)')}${EX('Lebensmittel','Zusatz: optionale Schlagworte (mehrere möglich)')}</div>
+<p>Dann <b>Buchen</b>. Danach springt der Cursor wieder in den Betrag, das Datum bleibt stehen. Ein Fehler? Im Hinweis unten oder in der Liste „Zuletzt“ auf <b>↩ Rückgängig</b> tippen: Die Buchung verschwindet und steht wieder im Formular.</p>
+<h3>Von und Nach</h3><p>Ist eines der beiden eines deiner <b>Konten</b>, ändert sich dessen Stand. Das andere ist einfach Quelle oder Empfänger.<br>Gehalt: Von „Arbeitgeber“, Nach „Girokonto“, Kategorie Gehalt.<br>Geld abheben: Von „Girokonto“, Nach „Bargeld“, Kategorie Übertrag (zählt weder als Einnahme noch als Ausgabe).</p>
+<h3>Was merkt sich die App automatisch?</h3><p>Sobald du bei <b>Nach</b> einen Empfänger einträgst, den du schon kennst (zum Beispiel Rewe), füllt die App <b>Kategorie, Zusatz und Steuer-Auswahl der letzten Buchung mit diesem Empfänger</b> vor. Du musst also meist nur Betrag und Empfänger tippen. Änderst du die Auswahl, gilt beim nächsten Mal die neue.<br>Auch das zuletzt benutzte Konto bei „Von“ und das zuletzt gewählte Datum bleiben erhalten. Unter „Häufig in den letzten Monaten“ stehen deine üblichen Buchungen zum Antippen.<br>Gespeichert wird <b>jede Buchung sofort</b> auf dem Gerät und kurz danach automatisch im Daten-Speicher (oben: „synchron“).</p>
+<h3>Tanken und Serie</h3><p><b>⛽ Tanken</b> legt den Tankvorgang im Tankbuch und die Buchung „Tankstelle“ in einem Schritt an. <b>🔁 Serie nachtragen</b> bucht vergessene regelmäßige Zahlungen von … bis … (wöchentlich, monatlich, …) auf einmal.</p>
+<h3>Am PC</h3><p>Enter springt zum nächsten Feld, im letzten Feld bucht Enter, Strg+Enter bucht sofort. Im Datum ändern ↑ und ↓ den Wert. In der Vorschlagsliste wählt Enter nur den markierten Eintrag aus, es bucht nicht.</p>`},
+kats:{t:'Kategorien',h:`<p>Die <b>Kategorie</b> sagt, wofür das Geld ist. Jede Buchung hat genau eine. Die Auswertung rechnet nach Kategorien.</p>
+<p><b>Art</b> der Kategorie: <b>Einnahme</b> (Gehalt, Geschenke …), <b>Ausgabe</b> (Fixkosten, Spaßkosten …), <b>Rückerstattung</b> (Geld kommt zurück und mindert die Ausgaben) und <b>Intern</b> (Übertrag zwischen eigenen Konten und Ausgleich zählen weder als Einnahme noch als Ausgabe).</p>
+<p><b>Archivieren</b> blendet eine Kategorie bei neuen Buchungen aus, alte Buchungen behalten sie. <b>Löschen</b> geht nur, wenn sie in keiner Buchung vorkommt. „Ausgleich“ ist fest eingebaut.</p>`},
+zusatz:{t:'Zusatz-Kategorien',h:`<p>Der <b>Zusatz</b> ist ein zweites, optionales Schlagwort. Du kannst mehrere pro Buchung wählen. Er läuft quer zur Kategorie.</p>
+<p>Beispiel: Kategorie <b>Fixkosten</b>, Zusatz <b>Versicherungen</b> und <b>Auto</b>. So siehst du in der Auswertung später alles zu „Versicherungen“, egal in welcher Kategorie.</p>
+<p>Manche Zusätze helfen auch bei der Steuer: Bildung, Spenden, Versicherungen und Fahrtkosten werden im Steuer-Tab als Kandidaten vorgeschlagen. „Auto“ gehört zum Fahrzeug im Auto-Tab.</p>
+<p>Unter „Vorschläge“ findest du weitere gebräuchliche Zusätze zum Antippen.</p>`},
+st:{t:'Steuer-Kategorien',h:`<p>Das sind die Rubriken deiner Steuererklärung (zum Beispiel Arbeitsmittel, Spenden). Wenn du bei einer Buchung „Für die Steuererklärung“ auswählst, landet sie im <b>Steuer-Tab</b> automatisch in dieser Rubrik, mit Summe pro Jahr und PDF fürs Finanzamt. Du musst nichts doppelt pflegen.</p>
+<p>Ein Beleg-Hinweis (zum Beispiel „Rechnung im Ordner“) steht dann mit in der Liste.</p>`},
+konten:{t:'Konten',h:`<p>Ein <b>Konto</b> ist ein Ort, an dem Geld liegt: Girokonto, Bargeld, PayPal, Depot. Der Stand ist die Summe aller Buchungen. Negative Stände sind erlaubt.</p>
+<p>Auf ein Konto tippen: <b>Kontostand abgleichen</b> (du gibst den echten Stand ein, die Differenz wird als „Ausgleich“ gebucht), <b>umbenennen</b> (alle alten Buchungen werden mit angepasst), <b>archivieren</b> oder <b>löschen</b> (nur wenn es keine Buchungen hat).</p>
+<p><b>Archiv</b> heißt: Das Konto wird nicht mehr benutzt (zum Beispiel ein altes Studentenkonto). Es verschwindet aus Auswahl und Gesamtvermögen, die alten Buchungen bleiben erhalten. Archiviere, statt zu löschen, wenn schon Buchungen existieren.</p>
+<p><b>Gruppen</b> (zum Beispiel Alltag, Sparen) fassen Konten in der Übersicht zusammen.</p>`},
+regelmaessig:{t:'Regelmäßige Zahlungen',h:`<p>Hier legst du Dinge an, die sich wiederholen: Miete, Handyvertrag, Abos, Versicherungen, aber auch feste Einnahmen wie Gehalt.</p>
+<p>Gib Name, Betrag, Konto, Rhythmus (monatlich, vierteljährlich, jährlich …) und das Startdatum an. Die App bucht jede fällige Zahlung <b>beim Öffnen automatisch</b> in deine Buchungen. Mit „manuell bestätigen“ erscheint sie stattdessen als Hinweis auf dem Eintragen-Tab, und du bestätigst oder überspringst sie.</p>
+<p>Oben siehst du, wie viel Fixkosten und feste Einnahmen pro Monat anfallen. Zum Pausieren (zum Beispiel gekündigtes Abo) die Zahlung öffnen und deaktivieren. Vergessene Zahlungen aus der Vergangenheit trägst du mit „Serie nachtragen“ im Eintragen-Tab nach.</p>`},
+steuer:{t:'Steuer',h:`<p>Hier sammelt die App alles für deine Steuererklärung pro Jahr.</p>
+<p><b>Aus deinen Buchungen:</b> Alles, was du beim Buchen mit „Für die Steuererklärung“ markiert hast, wird nach Steuer-Kategorie gruppiert und summiert. Buchungen mit Zusätzen wie Bildung, Spenden oder Versicherungen schlägt die App als Kandidaten vor, du markierst sie mit einem Tipp.</p>
+<p><b>Fahrten</b> (zum Beispiel zur Uni) trägst du mit Kilometern ein. Die Pauschale pro km stellst du in den Einstellungen ein. Tankkosten zählen nicht doppelt.</p>
+<p>Mit dem PDF-Knopf erstellst du eine Übersicht für das Finanzamt.</p>`},
+auto:{t:'Auto',h:`<p>Lege zuerst ein <b>Fahrzeug</b> an (Auto oder Motorrad). Du kannst mehrere haben und alte archivieren.</p>
+<p><b>Tankbuch:</b> Jede Tankfüllung mit Datum, Preis pro Liter, Betrag und km-Stand. Daraus rechnet die App Verbrauch und Kosten pro 100 km und kann eine Tabelle zum Drucken erstellen. Am schnellsten tankst du im Eintragen-Tab unter „⛽ Tanken“.</p>
+<p><b>Scheckheft:</b> Inspektion, HU/TÜV, Reparatur, Reifen und mehr mit Datum und Kilometerstand. Die App merkt sich, wann etwas wieder fällig wird.</p>
+<p><b>Kosten:</b> Alle Ausgaben fürs Fahrzeug, wahlweise gesamt, pro Jahr oder pro Monat.</p>`}
+};
 /* ---------- Standardwerte ---------- */
 function defCfg(){return{stichtag:today(),konten:[],pausch:0.30,regeln:[],fahrzeuge:[],
- kats:[...['Gehalt','Nebeneinkommen','Taschengeld','Provision','Bonus Reward','Geschenke','Dividenden'].map(n=>({n,typ:'ein',a:true})),{n:'Rückerstattung',typ:'rue',a:true},{n:'Übertrag',typ:'int',a:true},{n:'Ausgleich',typ:'int',a:true},...['Fixkosten','Spaßkosten','Andere','Investieren'].map(n=>({n,typ:'aus',a:true}))],
- zusatz:['Lebensmittel','Auto','Fahrtkosten','Abos','Versicherungen','Bildung','Arznei','Steuern','Spenden','Kontoführungsgebühren'].map(n=>({n,a:true})),
- steuerKats:['Studium/Bildung','Fahrtkosten','Arbeitsmittel','Spenden','Versicherungen','Krankheitskosten','Sonstiges'].map(n=>({n,a:true}))}}
+ kats:[...['Gehalt','Nebeneinkommen','Geschenke'].map(n=>({n,typ:'ein',a:true})),{n:'Rückerstattung',typ:'rue',a:true},{n:'Übertrag',typ:'int',a:true},{n:'Ausgleich',typ:'int',a:true},...['Fixkosten','Spaßkosten','Andere','Investieren'].map(n=>({n,typ:'aus',a:true}))],
+ zusatz:['Auto','Abos','Versicherungen','Bildung','Steuern'].map(n=>({n,a:true})),
+ steuerKats:['Studium/Bildung','Fahrtkosten','Arbeitsmittel','Spenden','Versicherungen'].map(n=>({n,a:true}))}}
+const SUGG={kats:[{n:'Taschengeld',typ:'ein'},{n:'Dividenden',typ:'ein'},{n:'Provision',typ:'ein'}],zusatz:['Lebensmittel','Fahrtkosten','Arznei','Spenden','Kontoführungsgebühren'].map(n=>({n})),steuerKats:['Krankheitskosten','Sonstiges'].map(n=>({n}))};
 const TYP_LABEL={ein:'Einnahme',aus:'Ausgabe',rue:'Rückerstattung',int:'Intern'};
 
 /* ---------- Zustand ---------- */
@@ -254,8 +296,11 @@ const isKonto=n=>kMap().has(lc(n));
 const katOf=n=>CFG().kats.find(k=>k.n===n);
 const typOf=e=>{const k=katOf(e.k);return k?k.typ:(e.k?'aus':'none')};
 function eff(e){if(typOf(e)!=='aus')return e.k||'Ohne Kategorie';const z=e.z||[];if(z.length){const order=CFG().zusatz.map(x=>x.n);let best=z[0],bi=1e9;for(const x of z){const i=order.indexOf(x);if(i>=0&&i<bi){bi=i;best=x}}return best}return e.k}
+/* Sind alle Startsalden 0 (neues Haushaltsbuch), zählen ALLE Buchungen. Sonst gilt der Stichtag. */
+const isFrei=()=>konten().every(k=>!(+k.start));
+function stEff(){return isFrei()&&S.asc.length?isoAdd(S.asc[0].d,-1):CFG().stichtag}
 function balances(until){
-  const st=CFG().stichtag,t=until||today(),m=kMap(),bal={};
+  const st=stEff(),t=until||today(),m=kMap(),bal={};
   konten().forEach(k=>bal[lc(k.n)]=+k.start||0);
   for(const e of S.asc){if(e.d<=st||e.d>t)continue;const n=lc(e.n),v=lc(e.v);if(m.has(n))bal[n]+=e.b;if(m.has(v))bal[v]-=e.b}
   return bal;
@@ -267,7 +312,7 @@ function totals(list){
   return{ein,aus:aus-rue,rue,cats};
 }
 function history(){
-  const st=CFG().stichtag,t=today(),ks=konten(),m=kMap(),cum={};
+  const st=stEff(),t=today(),ks=konten(),m=kMap(),cum={};
   ks.forEach(k=>cum[lc(k.n)]=+k.start||0);
   const groups=[...new Set(ks.map(k=>k.g||'Sonstige'))];
   const out=[];let i=0;const asc=S.asc.filter(e=>e.d>st&&e.d<=t);
@@ -320,7 +365,7 @@ function readEntry(p,id){
   if(FC[p].z.size)e.z=[...FC[p].z];
   let fz=$('#'+p+'-fz').value;const ak=$('#'+p+'-ak').value,km=parseNum($('#'+p+'-km').value);
   if(ak&&!fz){const dv=vehicles().find(x=>x.a!==false);if(dv)fz=dv.id;else toast('Tipp: Lege im Tab Auto zuerst ein Fahrzeug an')}
-  if(fz){e.fz=fz;const zn=(vehicles().find(x=>x.id===fz)||{}).typ||'Auto';if(CFG().zusatz.some(x=>x.n===zn)&&!(e.z||[]).includes(zn))e.z=[...(e.z||[]),zn]}
+  if(fz){e.fz=fz;if(!id&&!FC[p].touched){const zn=(vehicles().find(x=>x.id===fz)||{}).typ||'Auto';if(CFG().zusatz.some(x=>x.n===zn)&&!(e.z||[]).includes(zn))e.z=[...(e.z||[]),zn]}}
   if(ak)e.ak=ak;if(!isNaN(km))e.km=Math.round(km);
   const st=$('#'+p+'-st').value;if(st){e.st=st;const bl=$('#'+p+'-bl').value.trim();if(bl)e.bl=bl}
   return e;
@@ -332,7 +377,6 @@ function fillFromKnown(p){
   f.k=last.k;f.z=new Set(last.z||[]);
   $('#'+p+'-kc').innerHTML=chipsK(p);$('#'+p+'-zc').innerHTML=chipsZ(p);
   if(last.st&&!$('#'+p+'-st').value)$('#'+p+'-st').value=last.st;
-  if(last.fz&&!$('#'+p+'-fz').value){$('#'+p+'-fz').value=last.fz;if(last.ak&&last.ak!=='Sprit')$('#'+p+'-ak').value=last.ak}
 }
 
 /* ---------- Buchungen schreiben ---------- */
@@ -366,7 +410,7 @@ function render(){
   renderTabs();
   const m=$('#main');
   if(!S.booted){m.innerHTML='<div class="empty">Lade Daten …</div>';return}
-  m.innerHTML=V[S.view]();
+  m.innerHTML=tabInfo()+V[S.view]();
   if(AFTER[S.view])AFTER[S.view]();
   window.scrollTo(0,0);
 }
@@ -379,7 +423,7 @@ function refresh(){
   if(S.view==='buchungen'){fillBuchungen();return}
   if(typing&&!$('#modal.open')){S.pending=true;return}
   S.pending=false;
-  const y=window.scrollY;$('#main').innerHTML=V[S.view]();if(AFTER[S.view])AFTER[S.view]();window.scrollTo(0,y);
+  const y=window.scrollY;$('#main').innerHTML=tabInfo()+V[S.view]();if(AFTER[S.view])AFTER[S.view]();window.scrollTo(0,y);
 }
 function updateHeader(){
   if(!S.cfg&&!S.asc.length){return}
@@ -404,10 +448,10 @@ V.eintragen=()=>{
   const e={d:DSEL(),v:last||(first?first.n:''),k:'Andere'};
   const t=S.emode==='t';
   return `<div id="banner"></div>
-  <div class="chips" style="margin-bottom:10px"><button type="button" class="chip ${t?'':'on'}" data-act="emode" data-v="b">Buchung</button><button type="button" class="chip ${t?'on':''}" data-act="emode" data-v="t">⛽ Tanken</button><button type="button" class="chip ${S.emode==='s'?'on':''}" data-act="emode" data-v="s">🔁 Serie nachtragen</button></div>
+  <div class="chips" style="margin-bottom:10px;align-items:center"><button type="button" class="chip ${t?'':'on'}" data-act="emode" data-v="b">Buchung</button><button type="button" class="chip ${t?'on':''}" data-act="emode" data-v="t">⛽ Tanken</button><button type="button" class="chip ${S.emode==='s'?'on':''}" data-act="emode" data-v="s">🔁 Serie nachtragen</button>${ib('eintragen')}</div>
   ${t?tankForm():S.emode==='s'?serieForm():`<form class="card" id="ef" autocomplete="off">${entryFields('f',e)}
     <div class="btns"><button class="btn pri" type="submit" style="flex:1">Buchen</button></div>
-    <div class="hint">Enter springt zum nächsten Feld · im letzten Feld bucht Enter · Strg+Enter bucht sofort · Datum: 5.3. / +1 / −2 / ↑↓</div></form>
+</form>
   <div class="card" id="tplbox" hidden><h3>Häufig in den letzten Monaten</h3><div class="chips" id="tpls"></div></div>`}
   <div class="card flat"><div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">Zuletzt</h3><div class="chips" id="rtog"></div></div><div class="list" id="recent"></div></div>`;
 };
@@ -656,7 +700,7 @@ V.konten=()=>{
 };
 function ausgleichEntry(konto,ist,soll,d){
   const diff=Math.round((ist-soll)*100)/100;if(!diff)return null;
-  const e={i:uid('e'),d,t:'Ausgleich: Kontostand '+numIn(ist)+' € statt '+numIn(soll)+' €',k:'Ausgleich'};
+  const e={i:uid('e'),d,t:'Ausgleich: Kontostand '+numIn(ist)+' € statt '+numIn(soll)+' €',k:'Ausgleich',ts:Date.now()};
   if(diff>0){e.v='Ausgleich';e.n=konto;e.b=diff}else{e.v=konto;e.n='Ausgleich';e.b=-diff}
   return e;
 }
@@ -798,13 +842,21 @@ function autoTank(v){
 }
 
 /* --- Einstellungen --- */
-function catList(list,key,withTyp){
-  return `<div class="list">${CFG()[list].map(k=>`<div class="kv"><span>${esc(k.n)} ${withTyp?`<span class="muted small">${TYP_LABEL[k.typ]}</span>`:''}${k.a===false?' <span class="tag">archiviert</span>':''}</span><button class="btn sm" data-act="catTog" data-l="${list}" data-n="${esc(k.n)}">${k.a===false?'Aktivieren':'Archivieren'}</button></div>`).join('')}
-  <form class="kv" data-form="catAdd" data-l="${list}" style="grid-template-columns:1fr ${withTyp?'auto ':''}auto"><input name="n" placeholder="Neu hinzufügen" aria-label="Neuer Name" required>${withTyp?`<select name="typ" aria-label="Art" style="width:auto">${Object.entries(TYP_LABEL).map(([k,v])=>`<option value="${k}" ${k==='aus'?'selected':''}>${v}</option>`).join('')}</select>`:''}<button class="btn sm pri" type="submit">Hinzufügen</button></form></div>`;
+const PROT={kats:['Ausgleich']};
+function catUse(list,n){
+  if(list==='kats')return S.asc.filter(e=>e.k===n).length+CFG().regeln.filter(r=>r.k===n).length;
+  if(list==='zusatz')return S.asc.filter(e=>(e.z||[]).includes(n)).length+CFG().regeln.filter(r=>(r.z||[]).includes(n)).length;
+  return S.asc.filter(e=>e.st===n).length+CFG().regeln.filter(r=>r.st===n).length;
 }
-V.einstellungen=()=>`${ghCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien</h3><div class="small muted">Archivierte Kategorien verschwinden aus der Auswahl, alte Buchungen behalten sie.</div></div>${catList('kats','kats',true)}</div>
-<div class="card flat"><div style="padding:12px 14px"><h3>Zusatz-Kategorien</h3></div>${catList('zusatz','zusatz',false)}</div>
-<div class="card flat"><div style="padding:12px 14px"><h3>Steuer-Kategorien</h3></div>${catList('steuerKats','st',false)}</div>
+function catList(list,key,withTyp){
+  const have=new Set(CFG()[list].map(k=>lc(k.n))),sg=(SUGG[list]||[]).filter(x=>!have.has(lc(x.n)));
+  return `<div class="list">${CFG()[list].map(k=>`<div class="kv"><span>${esc(k.n)} ${withTyp?`<span class="muted small">${TYP_LABEL[k.typ]}</span>`:''}${k.a===false?' <span class="tag">archiviert</span>':''}</span><span class="btns" style="flex-wrap:nowrap"><button class="btn sm" data-act="catTog" data-l="${list}" data-n="${esc(k.n)}">${k.a===false?'Aktivieren':'Archivieren'}</button>${(PROT[list]||[]).includes(k.n)?'':`<button class="btn sm dng" data-act="catDel" data-confirm="1" data-l="${list}" data-n="${esc(k.n)}">Löschen</button>`}</span></div>`).join('')}
+  <form class="kv" data-form="catAdd" data-l="${list}" style="grid-template-columns:1fr ${withTyp?'auto ':''}auto"><input name="n" placeholder="Neu hinzufügen" aria-label="Neuer Name" required>${withTyp?`<select name="typ" aria-label="Art" style="width:auto">${Object.entries(TYP_LABEL).map(([k,v])=>`<option value="${k}" ${k==='aus'?'selected':''}>${v}</option>`).join('')}</select>`:''}<button class="btn sm pri" type="submit">Hinzufügen</button></form>
+  ${sg.length?`<div style="padding:10px 14px"><div class="small muted" style="margin-bottom:6px">Vorschläge zum Hinzufügen:</div><div class="chips">${sg.map(x=>`<button type="button" class="chip" data-act="catSug" data-l="${list}" data-n="${esc(x.n)}" data-typ="${x.typ||'aus'}">+ ${esc(x.n)}</button>`).join('')}</div></div>`:''}</div>`;
+}
+V.einstellungen=()=>`${ghCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>
+<div class="card flat"><div style="padding:12px 14px"><h3>Zusatz-Kategorien ${ib('zusatz')}</h3></div>${catList('zusatz','zusatz',false)}</div>
+<div class="card flat"><div style="padding:12px 14px"><h3>Steuer-Kategorien ${ib('st')}</h3></div>${catList('steuerKats','st',false)}</div>
 <form class="card" data-form="pausch"><h3>Fahrtenpauschale</h3><div class="row2"><div class="field"><label for="pa">€ pro Kilometer</label><input id="pa" inputmode="decimal" value="${numIn(CFG().pausch)}"></div><div class="field"><label>&nbsp;</label><button class="btn" type="submit">Speichern</button></div></div></form>
 <div class="card"><h3>Sicherung</h3><div class="small muted">Lädt alle Daten als Datei herunter. Zum Aufbewahren oder für Excel.</div><div class="btns"><button class="btn" data-act="csvAll">Buchungen als CSV</button><button class="btn" data-act="backup">Komplette Sicherung (JSON)</button></div></div>`;
 
@@ -841,8 +893,8 @@ function modalKonto(name){
     <button class="btn pri" type="submit">Ausgleich buchen</button></form>
     <form data-form="kontoSave" data-n="${esc(k.n)}" style="display:flex;flex-direction:column;gap:12px"><h3>Konto bearbeiten</h3>
     ${fld('ko-name','Name',k.n,'autocomplete="off"')}<div class="small muted" id="ko-warn">Beim Umbenennen werden alle bisherigen Buchungen und Regeln mit angepasst – nichts geht verloren.</div>
-    <div class="row2">${fld('ko-g','Gruppe',k.g||'','list="dl-groups"')}${fld('ko-s','Startsaldo am '+pd(CFG().stichtag),numIn(k.start||0),'inputmode="decimal"')}</div>
-    <div class="btns"><button class="btn" type="submit">Speichern</button><button class="btn" type="button" data-act="kTog" data-n="${esc(k.n)}">${k.a===false?'Wieder aktivieren':'Archivieren'}</button><button class="btn ghost" type="button" data-act="close">Schließen</button></div>${k.a!==false&&Math.abs(bal)>0.005?'<div class="small muted">Archivierte Konten zählen nicht mehr zum Gesamtvermögen. Der Saldo bleibt gespeichert.</div>':''}</form>`);
+    <div class="row2">${fld('ko-g','Gruppe',k.g||'','list="dl-groups"')}${isFrei()?'':fld('ko-s','Startsaldo am '+pd(CFG().stichtag),numIn(k.start||0),'inputmode="decimal"')}</div>
+    <div class="btns"><button class="btn" type="submit">Speichern</button><button class="btn" type="button" data-act="kTog" data-n="${esc(k.n)}">${k.a===false?'Wieder aktivieren':'Archivieren'}</button><button class="btn dng" type="button" data-act="kDel" data-confirm="1" data-n="${esc(k.n)}">Löschen</button><button class="btn ghost" type="button" data-act="close">Schließen</button></div><div class="small muted">Löschen geht nur, wenn das Konto keine Buchungen hat.</div>${k.a!==false&&Math.abs(bal)>0.005?'<div class="small muted">Archivierte Konten zählen nicht mehr zum Gesamtvermögen. Der Saldo bleibt gespeichert.</div>':''}</form>`);
   }else{
     openModal(`<h2>Neues Konto</h2><form data-form="kontoNew" style="display:flex;flex-direction:column;gap:12px">${fld('ko-n','Name','','required')}<div class="row2">${fld('ko-g','Gruppe','Alltag','list="dl-groups"')}${fld('ko-s','Aktueller Stand in €','0','inputmode="decimal"')}</div><div class="small muted">Der Stand wird als Ausgleichsbuchung von heute angelegt.</div>${btnRow()}</form>`);
   }
@@ -1017,13 +1069,26 @@ const A={
   ruleDel:t=>{if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich löschen?';return}const id=$('[data-form=ruleSave]').dataset.id;CFG().regeln=CFG().regeln.filter(r=>r.id!==id);saveCfg();closeModal();refresh()},
   dueBook:t=>{const r=CFG().regeln.find(x=>x.id===t.dataset.id);const ds=dues(r,today());ds.forEach(d=>putEntry(ruleEntry(r,d)));r.last=ds[ds.length-1];saveCfg();rebuild();refresh();toast(r.n+' gebucht')},
   dueSkip:t=>{const r=CFG().regeln.find(x=>x.id===t.dataset.id);const ds=dues(r,today());r.last=ds[ds.length-1];saveCfg();refresh()},
-  stMark:t=>{const e=clone(S.byId.get(t.dataset.id));const z=(e.z||[]).find(x=>STMAP[x]);e.st=STMAP[z];updateEntry(e)},
+  stMark:t=>{const e=clone(S.byId.get(t.dataset.id));const z=(e.z||[]).find(x=>STMAP[x]);e.st=STMAP[z];if(!CFG().steuerKats.some(k=>k.n===e.st)){CFG().steuerKats.push({n:e.st,a:true});saveCfg()}updateEntry(e)},
   fNew:()=>modalFahrt(null),fEdit:t=>modalFahrt(t.dataset.id),
   kosNew:()=>modalKosten(null),kosEdit:t=>modalKosten(t.dataset.id),
   fahrtDel:t=>delSt(t,'fahrten','fahrtSave'),kosDel:t=>delSt(t,'kosten','kosSave'),
   sNew:()=>modalFill(null),sEdit:t=>modalFill(t.dataset.d),vNew:()=>modalVehicle(),vArch:()=>{S.sv.arch=!S.sv.arch;render()},
   vToggle:t=>{const v=vehicles().find(x=>x.id===t.dataset.id);v.a=v.a===false?true:false;saveCfg();S.sv.id='';render()},
   fillDel:t=>{if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich löschen?';return}const v=curVeh(),d=$('[data-form=fillSave]').dataset.d;S.sprit.set(v.id,(S.sprit.get(v.id)||[]).filter(x=>x.d!==d));saveSprit(v.id);closeModal();refresh()},
+  info:t=>{const i=INFO[t.dataset.k];if(i)openModal(`<h2>${esc(i.t)}</h2><div class="infotxt">${i.h}</div><div class="btns" style="margin-top:14px"><button class="btn pri" data-act="close" style="flex:1">Verstanden</button></div>`)},
+  catDel:t=>{
+    const l=t.dataset.l,n=t.dataset.n,u=catUse(l,n);
+    if(u){toast('„'+n+'“ wird in '+u+' Buchungen/Regeln verwendet. Bitte archivieren statt löschen.');return}
+    if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich?';return}
+    CFG()[l]=CFG()[l].filter(x=>x.n!==n);saveCfg();refresh();toast('„'+n+'“ gelöscht')},
+  catSug:t=>{const l=t.dataset.l,n=t.dataset.n;if(CFG()[l].some(x=>lc(x.n)===lc(n)))return;const o={n,a:true};if(l==='kats')o.typ=t.dataset.typ||'aus';CFG()[l].push(o);saveCfg();refresh()},
+  kDel:t=>{
+    const k=konten().find(x=>x.n===t.dataset.n);if(!k)return;
+    const c=S.asc.filter(e=>lc(e.v)===lc(k.n)||lc(e.n)===lc(k.n)).length;
+    if(c||CFG().regeln.some(r=>lc(r.konto)===lc(k.n))){toast('„'+k.n+'“ hat '+c+' Buchungen/Regeln. Bitte archivieren statt löschen.');return}
+    if(t.dataset.confirm==='1'){t.dataset.confirm='2';t.textContent='Wirklich löschen?';return}
+    CFG().konten=konten().filter(x=>x!==k);saveCfg();closeModal();refresh()},
   catTog:t=>{const k=CFG()[t.dataset.l].find(x=>x.n===t.dataset.n);k.a=k.a===false?true:false;saveCfg();refresh()},
   vTab:t=>{S.sv.tab=t.dataset.v;render()},vMode:t=>{S.sv.mode=t.dataset.v;render()},svArt:t=>{S.sv.art=t.dataset.v;render()},
   svNew:()=>modalNewEntry({fz:curVeh().id,ak:'Inspektion',z:[curVeh().typ||'Auto']}),
@@ -1101,7 +1166,7 @@ const FORMS={
       if(f.dataset.ren!==nn){f.dataset.ren=nn;$('#ko-warn').innerHTML='<b>„'+esc(k.n)+'“ → „'+esc(nn)+'“:</b> '+cnt+' Buchungen werden angepasst. Zum Bestätigen noch einmal auf Speichern tippen.';return}
       renameKonto(k.n,nn);
     }
-    k.g=$('#ko-g').value.trim();const s=parseNum($('#ko-s').value);if(!isNaN(s))k.start=s;saveCfg();closeModal();refresh()},
+    k.g=$('#ko-g').value.trim();const s=$('#ko-s')?parseNum($('#ko-s').value):NaN;if(!isNaN(s))k.start=s;saveCfg();closeModal();refresh()},
   kontoNew:()=>{
     const n=$('#ko-n').value.trim();if(!n)return;if(isKonto(n)){toast('Dieses Konto gibt es schon');return}
     const s=parseNum($('#ko-s').value)||0;konten().push({n,start:0,g:$('#ko-g').value.trim()||'Sonstige',a:true});saveCfg();
