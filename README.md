@@ -63,6 +63,9 @@ Für den Alltag: schnell buchen, übersichtlich auswerten, nichts doppelt pflege
 
 Ein vollständiges Buch für deine Coins, gebaut für die deutsche Steuer, aber auch einfach als Übersicht nutzbar.
 
+### Verbinden
+Beim ersten Start fragt jede App nach dem Daten-Repository: entweder per **Kopplungscode** von einem schon verbundenen Gerät oder **von Hand** mit GitHub-Name, Repository-Name und Zugangs-Token (leere Felder, Vorgaben als graue Platzhalter). Das Krypto-Buch kann zusätzlich den **Zugang des Haushaltsbuchs** übernehmen. Es legt dafür ein eigenes Repository `krypto-daten` an, damit sich die Apps nicht überschreiben.
+
 ### Version und Updates
 - Oben rechts steht die Version (zum Beispiel `v4.9`). Unten in den Einstellungen zeigt „Version … Details und Updates“ App-Version, Build-Nummer der APK, Plattform und Repository.
 - **Nach Update suchen** (nur sinnvoll in der Android-App) liest die neueste **Release** im öffentlichen GitHub-Repository. Gibt es eine neuere APK, erscheint „Update verfügbar“ mit **Herunterladen**. Danach die geladene Datei antippen und installieren. Optional sucht die App beim Start von selbst (höchstens alle 12 Stunden).
