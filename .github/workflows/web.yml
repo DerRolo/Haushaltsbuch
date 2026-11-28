@@ -24,14 +24,29 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment2.outputs.page_url || steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: www
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      # Falls GitHub das Artefakt nicht findet (kommt gelegentlich vor): kurz warten, neu hochladen, noch einmal veröffentlichen
+      - name: Kurz warten
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 20
+      - name: Artefakt erneut hochladen
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: www
+        continue-on-error: true
+      - id: deployment2
+        name: Erneut veröffentlichen
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4

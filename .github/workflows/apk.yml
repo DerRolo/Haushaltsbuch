@@ -58,6 +58,13 @@ jobs:
           print("Android-App-Icons erfolgreich erstellt.")
           PY
 
+      - name: Build-Info schreiben (für Versionsanzeige und Update-Suche in der App)
+        run: |
+          CODE=$(( $(date +%s) / 60 ))
+          echo "CODE=$CODE" >> "$GITHUB_ENV"
+          printf '{"repo":"%s","code":%s,"name":"1.%s","built":"%s"}' "${{ github.repository }}" "$CODE" "${{ github.run_number }}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > www/app-info.json
+          cat www/app-info.json
+
       - name: Web-App ins Projekt kopieren
         run: npx cap sync android
 
@@ -77,8 +84,10 @@ jobs:
 
       - name: Versionsnummer setzen
         run: |
-          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/" android/app/build.gradle
-          sed -i "s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          # versionCode = Minuten seit 1970: wächst immer, auch wenn der Zähler der Workflow-Läufe einmal neu beginnt
+          sed -i -E "s/versionCode [0-9]+/versionCode $CODE/" android/app/build.gradle
+          sed -i -E "s/versionName \"[^\"]*\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -E "versionCode|versionName" android/app/build.gradle
 
       - name: APK bauen
         working-directory: android
@@ -94,7 +103,7 @@ jobs:
           APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | sort -V | tail -1)
           FP=$($APKSIGNER verify --print-certs Haushaltsbuch_v1.${{ github.run_number }}.apk | grep -i "SHA-256" | head -1 | sed 's/.*: //')
           echo "Signatur-Fingerabdruck der APK: $FP"
-          echo "Version 1.${{ github.run_number }}. Signatur (SHA-256): $FP. Dieser Wert muss in JEDEM Release gleich sein, sonst lässt sich die App nicht aktualisieren." > release-notes.txt
+          echo "Version 1.${{ github.run_number }}. Build-Code: $CODE. Signatur (SHA-256): $FP. Der Signatur-Wert muss in JEDEM Release gleich sein, sonst lässt sich die App nicht aktualisieren." > release-notes.txt
 
       - name: Release mit APK veröffentlichen
         uses: softprops/action-gh-release@v2
@@ -103,3 +112,4 @@ jobs:
           name: Haushaltsbuch 1.${{ github.run_number }}
           files: Haushaltsbuch_v1.${{ github.run_number }}.apk
           body_path: release-notes.txt
+          make_latest: true
