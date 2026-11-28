@@ -95,14 +95,22 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
-      - name: APK umbenennen
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk Haushaltsbuch_v1.${{ github.run_number }}.apk
+      - name: APK mit dem festen Schlüssel signieren
+        run: |
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | sort -V | tail -1)
+          # Gradle hat die APK evtl. mit einem frischen Zufallsschlüssel signiert. Wir signieren sie deshalb
+          # immer selbst mit dem Schlüssel aus dem Secret neu. So bleibt die Signatur bei jedem Build gleich.
+          $APKSIGNER sign --ks ~/.android/debug.keystore --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android --out Haushaltsbuch_v1.${{ github.run_number }}.apk android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Signatur der APK prüfen und notieren
         run: |
           APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | sort -V | tail -1)
-          FP=$($APKSIGNER verify --print-certs Haushaltsbuch_v1.${{ github.run_number }}.apk | grep -i "SHA-256" | head -1 | sed 's/.*: //')
+          $APKSIGNER verify --verbose Haushaltsbuch_v1.${{ github.run_number }}.apk | head -5
+          FP=$($APKSIGNER verify --print-certs Haushaltsbuch_v1.${{ github.run_number }}.apk | grep -i "certificate SHA-256" | head -1 | sed 's/.*: //')
+          KFP=$(keytool -list -v -keystore ~/.android/debug.keystore -storepass android | grep -i "SHA256:" | head -1 | sed 's/.*SHA256: *//' | tr -d ':' | tr 'A-F' 'a-f')
           echo "Signatur-Fingerabdruck der APK: $FP"
+          echo "Fingerabdruck des Schlüssels:  $KFP"
+          if [ "$FP" != "$KFP" ]; then echo "FEHLER: Die APK ist nicht mit dem festen Schlüssel signiert."; exit 1; fi
           echo "Version 1.${{ github.run_number }}. Build-Code: $CODE. Signatur (SHA-256): $FP. Der Signatur-Wert muss in JEDEM Release gleich sein, sonst lässt sich die App nicht aktualisieren." > release-notes.txt
 
       - name: Release mit APK veröffentlichen
