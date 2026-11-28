@@ -1040,7 +1040,7 @@ function startCard(){
 const startUpd=()=>{const sc=$('#startcard');if(sc)sc.innerHTML=startCard()};
 const _ve=V.eintragen;V.eintragen=()=>'<div id="startcard">'+startCard()+'</div>'+_ve();
 const _vk=V.konten;V.konten=()=>startCard()+_vk();
-const APP_VER='4.10',APP_DATE='27.11.2026';
+const APP_VER='4.11',APP_DATE='27.11.2026';
 const verCard=()=>(window.UPD||{html:()=>'',setVer(){}}).html('Haushaltsbuch',APP_VER,APP_DATE);(window.UPD||{setVer(){}}).setVer('Haushaltsbuch',APP_VER);
 const langCard=()=>`<div class="card flat"><div style="padding:12px 14px"><h3>Sprache</h3><div class="btns" style="margin-top:8px">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button class="btn sm ${(window.I18N&&I18N.lang())===k?'pri':'ghost'}" data-act="lang" data-v="${k}">${l}</button>`).join('')}</div></div></div>`;
 V.einstellungen=()=>`${ghCard()}${langCard()}${verCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>
@@ -1462,7 +1462,7 @@ async function start(){
 function onGhStatus(s){setSync(s.state==='ok'||s.state==='busy',s.msg||'');window.GH_STATE=s;const e=$('#ghstate');if(e)e.textContent=s.msg||''}
 function ghCard(){
   if(!window.GH_MODE)return '';const c=window.GH_CFG;
-  return `<div class="card"><h3>Verbindung</h3><div class="small muted">Deine Daten liegen auf diesem Gerät und im privaten Repository <b>${esc(c.owner)}/${esc(c.repo)}</b>.</div><div class="small" id="ghstate">${esc((window.GH_STATE||{}).msg||'')}</div><div class="btns"><button class="btn" data-act="ghSync">Jetzt synchronisieren</button><button class="btn" data-act="ghCode">Kopplungscode für ein anderes Gerät</button><button class="btn dng" data-act="ghOut" data-confirm="1">Trennen</button></div></div>`;
+  return `<div class="card"><h3>Verbindung</h3><div class="small muted">Deine Daten liegen auf diesem Gerät und im privaten Repository <b>${esc(c.owner)}/${esc(c.repo)}</b>.</div><div class="small" id="ghstate">${esc((window.GH_STATE||{}).msg||'')}</div><div class="btns"><button class="btn" data-act="ghSync">Jetzt synchronisieren</button><button class="btn" data-act="ghCode">Kopplungscode für ein anderes Gerät</button><button class="btn dng" data-act="ghOut" data-confirm="1">Trennen</button></div><div class="small muted" style="margin-top:8px">🔒 Haushaltsbuch und Krypto-Buch nutzen getrennte Repositories. Die App schreibt nie in ein Repository mit Daten der anderen App.</div></div>`;
 }
 A.ghSync=()=>{db.sync();toast('Synchronisiere …')};
 A.ghCode=()=>{openModal(`<h2>Kopplungscode</h2><div class="small muted">Enthält deinen Zugangs-Token. Schick ihn nur dir selbst (z. B. als Notiz oder Nachricht an dich) und lösche ihn danach. Auf dem anderen Gerät beim ersten Start einfügen.</div><textarea id="gc" rows="5" readonly style="font:12px monospace">${esc(HBX.makeCode(window.GH_CFG))}</textarea><div class="btns"><button class="btn pri" data-act="ghCopy">Kopieren</button><button class="btn" data-act="close">Schließen</button></div>`)};
@@ -1473,6 +1473,7 @@ function renderSetup(){
   $('#main').innerHTML=`<div class="card"><h2>Mit dem Daten-Repository verbinden</h2><div class="small muted">Einmalig pro Gerät. Deine Daten liegen in einem privaten GitHub-Repository, so sind Handy und PC synchron.</div>
   <form data-form="ghCode" style="display:flex;flex-direction:column;gap:10px"><div class="field"><label for="gh-code">Kopplungscode (wenn schon ein Gerät verbunden ist)</label><textarea id="gh-code" rows="3" placeholder="HB1.…"></textarea></div><button class="btn pri" type="submit">Mit Code verbinden</button></form></div>
   <form class="card" data-form="ghManual"><h3>Oder von Hand</h3><div class="field"><label for="gh-o">GitHub-Benutzername</label><input id="gh-o" autocapitalize="none" autocomplete="off"></div><div class="field"><label for="gh-r">Name des Daten-Repositorys</label><input id="gh-r" autocapitalize="none" autocomplete="off" placeholder="haushaltsbuch-daten"></div><div class="field"><label for="gh-t">Zugangs-Token</label><input id="gh-t" type="password" autocapitalize="none" autocomplete="off" placeholder="github_pat_…"></div><button class="btn pri" type="submit">Verbinden</button></form>
+  <div class="card"><div class="small muted" style="margin:0">🔒 <b>Haushaltsbuch und Krypto-Buch bleiben streng getrennt:</b> Jede App braucht ein <b>eigenes</b> Repository. Die App verweigert das Verbinden mit einem Repository, das Daten der anderen App enthält, und schreibt dort nie. Ein gemeinsames Repository ist vielleicht später möglich.</div></div>
   <div id="gh-err" class="small neg"></div>`;
 }
 async function ghDo(c){const err=$('#gh-err');err.textContent='Verbinde …';try{await HBX.ghConnect(c);err.textContent='';await start()}catch(e){err.textContent=(e&&e.message)||String(e);if(String(e&&e.message).startsWith('Failed')||e instanceof TypeError)err.textContent='Keine Verbindung zu GitHub. Internet prüfen.'}}

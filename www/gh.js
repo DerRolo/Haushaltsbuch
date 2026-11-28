@@ -18,7 +18,23 @@ function parseCode(s){
   const o=JSON.parse(b64d(s.slice(4)));if(!o.o||!o.r||!o.t)throw new Error('Der Kopplungscode ist unvollständig.');
   return{owner:o.o,repo:o.r,token:o.t};
 }
+
+/* ----- Schutz: Das Haushaltsbuch darf nie in ein Repository schreiben, das Krypto-Buch-Daten enthält ----- */
+const BADP=/^data\/orders\//;
+const OTHER_KEY='kb-gh';
+const nameBad=(o,r)=>{if(/krypto/i.test(String(r)))return true;try{const x=JSON.parse(localStorage.getItem(OTHER_KEY)||'null');if(x&&x.owner&&x.repo&&String(x.owner).toLowerCase()===String(o).toLowerCase()&&String(x.repo).toLowerCase()===String(r).toLowerCase())return true}catch(e){}return false};
+const WRONG='Falsches Repository: Dieses Repository enthält Daten des Krypto-Buchs. Es wurde nichts gespeichert. Das Haushaltsbuch und Krypto-Buch brauchen zwei getrennte Repositories.';
+async function repoCheck(c,branch){
+  const H={Authorization:'Bearer '+c.token,Accept:'application/vnd.github+json'},A='https://api.github.com/repos/'+encodeURIComponent(c.owner)+'/'+encodeURIComponent(c.repo);
+  const r=await fetch(A+'/git/trees/'+encodeURIComponent(branch||'main')+'?recursive=1',{headers:H});
+  if(r.status===409||r.status===404)return;                 /* leeres Repository: unbedenklich */
+  if(!r.ok)throw Object.assign(new Error('HTTP '+r.status),{http:r.status});
+  const t=await r.json(),paths=(t.tree||[]).map(x=>x.path);
+  if(paths.some(p=>BADP.test(p)))throw Object.assign(new Error(WRONG),{wrong:true});
+  if(paths.includes('data/config/main.json')){const j=await fetch(A+'/contents/data/config/main.json'+(branch?'?ref='+encodeURIComponent(branch):''),{headers:H});if(j.ok){const m=await j.json();let d={};try{d=JSON.parse(b64d(m.content))}catch(e){}if(d&&typeof d==='object'&&Array.isArray(d.wallets))throw Object.assign(new Error(WRONG),{wrong:true})}}
+}
 async function ghConnect(c){
+  if(nameBad(c.owner,c.repo))throw new Error(WRONG);
   const res=await fetch('https://api.github.com/repos/'+encodeURIComponent(c.owner)+'/'+encodeURIComponent(c.repo),{headers:{Authorization:'Bearer '+c.token,Accept:'application/vnd.github+json'}});
   if(res.status===401)throw new Error('Der Token ist ungültig oder abgelaufen.');
   if(res.status===404)throw new Error('Repository nicht gefunden. Name oder Token-Zugriff prüfen.');
@@ -26,6 +42,7 @@ async function ghConnect(c){
   const j=await res.json();
   if(!j.permissions||!j.permissions.push)throw new Error('Der Token darf in diesem Repository nicht schreiben („Contents: Read and write“ fehlt).');
   if(!j.private)throw new Error('Das Daten-Repository ist öffentlich. Bitte auf „Private“ stellen, sonst kann jeder deine Finanzdaten lesen.');
+  await repoCheck(c,j.default_branch||'main');
   const out={owner:c.owner,repo:c.repo,token:c.token,branch:j.default_branch||'main'};
   ghSave(out);return out;
 }
@@ -41,7 +58,7 @@ function ghMake(cfg,onStatus){
   const API='https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo;
   const H={Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
   const docs=new Map(),subs=[];
-  let synced=false,syncing=false,flushT=null,firstDone=false;
+  let synced=false,syncing=false,flushT=null,firstDone=false;let guarded=false,wrongRepo=false;
   try{JSON.parse(localStorage.getItem('hbidx')||'[]').forEach(p=>{const r=localStorage.getItem('hbd:'+p);if(r)docs.set(p,JSON.parse(r))})}catch(e){}
   const persist=p=>{try{localStorage.setItem('hbd:'+p,JSON.stringify(docs.get(p)));localStorage.setItem('hbidx',JSON.stringify([...docs.keys()]))}catch(e){onStatus({state:'error',msg:'Lokaler Speicher ist voll'})}};
   const pending=()=>[...docs.values()].filter(r=>r.x).length;
@@ -99,6 +116,7 @@ function ghMake(cfg,onStatus){
   async function sync(){
     if(syncing)return;syncing=true;status('busy','synchronisiere …');
     try{
+      if(!guarded){await repoCheck(cfg,cfg.branch);guarded=true}
       const pushed=await push();const changed=pushed&&firstDone?[]:await pull();
       const first=!synced;synced=true;
       if(first||!firstDone){firstDone=true;subs.forEach(s=>{if(s.kind==='doc')s.fn(mkDoc(s.p));else s.fn(mkCol(s.c,changed.filter(p=>p.startsWith(s.c+'/')),'modified'))})}
@@ -106,12 +124,13 @@ function ghMake(cfg,onStatus){
       status('ok','synchron');
     }catch(e){
       if(!firstDone){firstDone=true;subs.forEach(s=>{s.kind==='doc'?s.fn(mkDoc(s.p)):s.fn(mkCol(s.c))})}
-      if(e&&(e.http===401||e.http===403))status('auth','Token ungültig oder ohne Rechte');
+      if(e&&e.wrong){wrongRepo=true;status('error','Falsches Repository, nichts wird gespeichert')}
+      else if(e&&(e.http===401||e.http===403))status('auth','Token ungültig oder ohne Rechte');
       else if(e&&e.http)status('error','GitHub-Fehler '+e.http);
       else status('offline',pending()?pending()+' Änderungen warten auf Internet':'offline');
     }finally{syncing=false}
   }
-  function scheduleFlush(){clearTimeout(flushT);flushT=setTimeout(sync,500)}
+  function scheduleFlush(){if(wrongRepo)return;clearTimeout(flushT);flushT=setTimeout(sync,500)}
   const hasCache=docs.size>0;
   const db={
     doc:p=>({
