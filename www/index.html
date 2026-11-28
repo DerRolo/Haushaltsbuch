@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0E6B5B"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0}body{font:14px/1.45 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}#fab{position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:24;border-radius:999px;padding:13px 24px;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.28)}#fab[hidden]{display:none}@media(min-width:860px){#fab{bottom:24px}}
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0}body{font:14px/1.45 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}#fab{position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:24;border-radius:999px;padding:13px 24px;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.28)}#fab[hidden]{display:none}@media(min-width:860px){#fab{bottom:24px}.btn.pri.dis{opacity:.45;filter:grayscale(1)}}
 .ktype{display:flex;width:100%;margin-bottom:8px}.ktype button{flex:1}
 </style>
 </head><body>
@@ -505,7 +505,7 @@ document.addEventListener('toggle',ev=>{const d=ev.target;if(d&&d.dataset&&d.dat
 function fabUpdate(){let f=document.getElementById('fab');const sb=S.view==='eintragen'?document.querySelector('#main form .btn.pri[type=submit]'):null;
   if(!sb){if(f)f.hidden=true;return}
   if(!f){f=document.createElement('button');f.id='fab';f.type='button';f.className='btn pri';f.addEventListener('click',()=>{const b=document.querySelector('#main form .btn.pri[type=submit]');if(b){const fm=b.closest('form');if(fm.requestSubmit)fm.requestSubmit(b);else b.click()}});document.body.appendChild(f)}
-  f.textContent=sb.textContent.trim()||'Buchen';const r=sb.getBoundingClientRect();f.hidden=r.top<window.innerHeight-8&&r.bottom>0}
+  f.textContent=sb.textContent.trim()||'Buchen';const r=sb.getBoundingClientRect();f.hidden=!(r.top>=window.innerHeight-8);f.classList.toggle('dis',sb.classList.contains('dis'))}
 window.addEventListener('scroll',fabUpdate,{passive:true});window.addEventListener('resize',fabUpdate);
 function entryFields(p,e){
   FC[p]={k:e.k||'',z:new Set(e.z||[]),touched:!!e.i};
@@ -525,12 +525,13 @@ function entryFields(p,e){
   <div class="row2"><div class="field"><label for="${p}-st">Für die Steuererklärung</label><select id="${p}-st" data-act-change="stsel" data-p="${p}">${stOpts(e.st||'')}</select></div>
   <div class="field"><label for="${p}-bl">Beleg / Hinweis</label><input id="${p}-bl" autocomplete="off" placeholder="z. B. Rechnung im Ordner" value="${esc(e.bl||'')}"></div></div></details>`;
 }
+function missingF(p,id){const m=[],g=x=>{const e=document.getElementById(p+'-'+x);return e?e.value.trim():''};
+  if(!readDate(p))m.push('Datum');if(isNaN(parseNum(g('amt'))))m.push('Betrag');if(!g('von'))m.push('Von');if(!g('nach'))m.push('Nach');if(FC[p]&&!FC[p].k&&!id)m.push('Kategorie');return m}
+function btnReady(){const b=document.querySelector('#ef .btn.pri[type=submit]');if(b)b.classList.toggle('dis',missingF('f').length>0);fabUpdate()}
+['input','change','click'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(btnReady,0),true));
 function readEntry(p,id){
   const d=getDate(p),b=parseNum($('#'+p+'-amt').value),v=$('#'+p+'-von').value.trim(),n=$('#'+p+'-nach').value.trim();
-  if(!d){toast('Datum unvollständig oder ungültig');return null}
-  if(isNaN(b)){toast('Bitte einen Betrag angeben');return null}
-  if(!v||!n){toast('Bitte „Von“ und „Nach“ ausfüllen');return null}
-  if(!FC[p].k&&!id){toast('Bitte eine Kategorie wählen');return null}
+  const mi=missingF(p,id);if(mi.length){toast('Es fehlt noch: '+mi.join(', '));return null}
   const e={i:id||uid('e'),d,v,n,b:Math.round(b*100)/100,t:$('#'+p+'-info').value.trim(),k:FC[p].k,ts:Date.now()};
   if(FC[p].z.size)e.z=[...FC[p].z];
   let fz=$('#'+p+'-fz').value;const ak=$('#'+p+'-ak').value,km=parseNum($('#'+p+'-km').value);
@@ -582,7 +583,7 @@ function render(){
   if(!S.booted){m.innerHTML='<div class="empty">Lade Daten …</div>';return}
   m.innerHTML=tabInfo()+V[S.view]();
   if(AFTER[S.view])AFTER[S.view]();
-  window.scrollTo(0,0);fabUpdate();
+  window.scrollTo(0,0);btnReady();
 }
 function refresh(){
   const act=document.activeElement;
@@ -1038,7 +1039,7 @@ function startCard(){
 const startUpd=()=>{const sc=$('#startcard');if(sc)sc.innerHTML=startCard()};
 const _ve=V.eintragen;V.eintragen=()=>'<div id="startcard">'+startCard()+'</div>'+_ve();
 const _vk=V.konten;V.konten=()=>startCard()+_vk();
-const APP_VER='4.7',APP_DATE='27.11.2026';
+const APP_VER='4.8',APP_DATE='27.11.2026';
 const verCard=()=>`<div class="vers">Haushaltsbuch · Version ${APP_VER} (${APP_DATE})</div>`;
 const langCard=()=>`<div class="card flat"><div style="padding:12px 14px"><h3>Sprache</h3><div class="btns" style="margin-top:8px">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button class="btn sm ${(window.I18N&&I18N.lang())===k?'pri':'ghost'}" data-act="lang" data-v="${k}">${l}</button>`).join('')}</div></div></div>`;
 V.einstellungen=()=>`${ghCard()}${langCard()}${verCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>

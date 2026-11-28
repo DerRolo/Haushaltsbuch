@@ -146,6 +146,10 @@ Bei jeder Anforderung zuerst klären, ob sie betrifft:
 - **Benachrichtigungen (Glocke, Krypto-Buch):** rote Zahl für Ungelesenes, beim Antippen verschwindet die Zahl, die Liste bleibt abrufbar. Einträge springen zur Sache (Auffälligkeiten, Buchung, Übersicht). Anlass: neue Auffälligkeiten nach dem Synchronisieren und Bestände, die steuerfrei werden. Nur sparsam benachrichtigen, nie pro Kleinigkeit (Spam vermeiden). Die Liste liegt pro Gerät.
 - **Was die Glocke meldet, muss in der Ansicht auch stehen.** Zähler (Glocke, Menü) und Ansicht Auffälligkeiten nutzen dieselbe Filterung. Vorschläge werden pro Wallet gezeigt, auch wenn das Wallet archiviert ist oder keinen Abfragestand mehr hat.
 - **Wallets lassen sich löschen** (Editor, mit Rückfrage, Anzahl der betroffenen Buchungen und Rückgängig). „Zusammenführen“ bleibt die Alternative, die Buchungen erhält.
+- **Vergleichen statt Fließtext:** Wo die App etwas zuordnen soll (ähnliche Buchung), zeigt sie beide Seiten als Gegenüberstellung mit Pfeil (Quelle ➜ Menge ➜ Ziel), Datum und Hash. Beim Verbinden werden alle Informationen beider Seiten übernommen (Hash, Gegenadresse, Gebühr).
+- **Wallet-Karten in Listen** (Auffälligkeiten) haben eine farbige Kopfzeile mit Initiale, großem Namen und Pfeil. Ein Tipp darauf öffnet das Wallet.
+- **Netzwerk-Auswahl** zeigt nur Netzwerke, die zur eingegebenen Adresse passen. BNB Beacon Chain (BEP2, `bnb1…`) ist nur noch ein Hinweis, die Chain wurde eingestellt.
+- **Haushalt „Buchen“-Knopf:** grau, solange Pflichtfelder fehlen. Tippen zeigt „Es fehlt noch: …“. Der schwebende Knopf erscheint nur, wenn der feste Buchen-Knopf weiter unten liegt, nie darunter.
 - **Spam** muss sich überall markieren und wieder freigeben lassen.
 - **NFTs und Sonstiges** zählen nicht in Gesamtwert und Anteile, bleiben aber für die Steuer erhalten.
 - **Kategorien** werden in zwei Schritten gewählt: Ausgabe, Einnahme, Intern, dann die passenden Kategorien.

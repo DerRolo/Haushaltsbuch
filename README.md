@@ -67,6 +67,9 @@ Ein vollständiges Buch für deine Coins, gebaut für die deutsche Steuer, aber 
 - Oben rechts zeigt die **Glocke** mit roter Zahl, was neu ist: neue **Auffälligkeiten** nach dem Synchronisieren und Coins, die **ab jetzt steuerfrei** sind (Haltefrist von einem Jahr erreicht). Antippen öffnet die Liste, die Zahl verschwindet. Ein Eintrag führt direkt zur Buchung oder Ansicht. Die Liste gilt pro Gerät und prüft beim Öffnen der App.
 - **Einstellungen** sind in beiden Apps das **Zahnrad**. Der Wechsel zwischen Haushalt und Krypto sitzt direkt links davon.
 
+### Haushaltsbuch: Buchen-Knopf
+Der Buchen-Knopf ist grau, bis Datum, Betrag, Von, Nach und Kategorie ausgefüllt sind. Tippen zeigt, was noch fehlt. Der schwebende Knopf blendet sich aus, sobald der feste Knopf sichtbar ist oder du darunter bist.
+
 ### Kurse
 - In der Übersicht lädt **„⟳ Kurse“** neben dem Gesamtwert die aktuellen Kurse (schnell). **„⟳ Verlauf“** neben 1W/1M/6M/1J/Max holt den Kursverlauf für die Grafik (dauert länger).
 - Das **„i“** mit der Erklärung steht überall ganz rechts.
@@ -75,6 +78,8 @@ Ein vollständiges Buch für deine Coins, gebaut für die deutsche Steuer, aber 
 - Beim Anlegen wählst du **Börse** (Binance, KuCoin …) oder **Wallet** (Ledger, MetaMask, Atomic Wallet …). Jedes hat seinen eigenen Bestand.
 - Ein Wallet kann **mehrere öffentliche Adressen** in verschiedenen Netzwerken haben. Das Netzwerk wählst du aus einer Liste mit Logos.
 - Ein Wallet kann einem anderen Menschen gehören („Verwahrt bei"), zum Beispiel Familie. Anteile lassen sich ausweisen („Mit anderen geteilt").
+- **Vergleich bei ähnlichen Buchungen:** Fund aus der Blockchain und deine vorhandene Buchung stehen untereinander mit Pfeil, Menge, Datum und Hash. „Ja, dieselbe Transaktion“ verbindet beide und übernimmt Hash, Gegenadresse und Gebühr.
+- **Netzwerk:** Bei einer eingetragenen Adresse zeigt die Auswahl nur passende Netzwerke. BEP2-Adressen (`bnb1…`) werden erkannt, die Chain ist aber eingestellt; bitte die 0x-Adresse (BNB Chain, BEP20) nutzen.
 - **Löschen oder zusammenführen:** Im Wallet-Editor gibt es **Zusammenführen** (Buchungen wandern in ein anderes Wallet) und **Wallet löschen** (mit Rückfrage und Rückgängig; Buchungen des Wallets werden mitgelöscht).
 - **Status:** aktiv, archiviert, tot, gehackt, infiltriert. Tote und gehackte Wallets zählen nicht zum Portfolio, ihre Buchungen bleiben für die Steuer erhalten.
 
