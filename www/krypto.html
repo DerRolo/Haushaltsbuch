@@ -826,7 +826,7 @@ const introK=()=>{const noW=!S.wallets.length,noT=!S.tx.length;if(!(noW||noT)||U
   <div class="small muted">Wallets lassen sich jederzeit umbenennen, archivieren (ausgeblendet, Buchungen bleiben für die Steuer) oder zusammenführen.</div>
   <div class="btns">${noW?'<button class="btn pri" data-act="wNew">Erstes Wallet anlegen</button>':'<button class="btn pri" data-act="impOpen">Buchungen importieren</button><button class="btn" data-act="go" data-v="buchen">Von Hand buchen</button>'}<button class="btn ghost" data-act="introX">Ausblenden</button></div></div>`};
 const _vb0=V.buchen;V.buchen=()=>`<div class="seg" style="align-self:flex-start">${[['form','Eintragen'],['rec','Regelmäßig'],['import','Importieren']].map(([k,l])=>`<button class="${BM===k?'on':''}" data-act="bm" data-v="${k}">${l}</button>`).join('')}</div>`+(BM==='import'?V.import():BM==='rec'?recCard():_vb0());
-const APP_VER='4.11',APP_DATE='27.11.2026';
+const APP_VER='4.12',APP_DATE='27.11.2026';
 const _ue=V.uebersicht;V.uebersicht=()=>introK()+_ue();
 /* ---------- Regelmäßige Buchungen ---------- */
 const IVS={d:'täglich',w:'wöchentlich',w2:'alle 2 Wochen',m:'monatlich',q:'vierteljährlich',y:'jährlich'};

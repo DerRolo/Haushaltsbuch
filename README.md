@@ -70,7 +70,8 @@ Beim ersten Start fragt jede App nach dem Daten-Repository: entweder per **Koppl
 
 ### Version und Updates
 - Oben rechts steht die Version (zum Beispiel `v4.9`). Unten in den Einstellungen zeigt „Version … Details und Updates“ App-Version, Build-Nummer der APK, Plattform und Repository.
-- **Nach Update suchen** (nur sinnvoll in der Android-App) liest die neueste **Release** im öffentlichen GitHub-Repository. Gibt es eine neuere APK, erscheint „Update verfügbar“ mit **Herunterladen**. Danach die geladene Datei antippen und installieren. Optional sucht die App beim Start von selbst (höchstens alle 12 Stunden).
+- **Nach Update suchen** (nur sinnvoll in der Android-App) liest die neueste **Release** im öffentlichen GitHub-Repository. Gibt es eine neuere APK, erscheint „Update verfügbar“ mit **Installieren**. Die App lädt die Datei selbst herunter (mit Prozentanzeige) und startet die Installation. Du bestätigst nur noch einmal im Android-Dialog. Beim ersten Mal fragt Android, ob die App „Apps installieren“ darf. Ohne den eingebauten Installer (ältere APK) öffnet der Knopf stattdessen den Browser-Download. Optional sucht die App beim Start von selbst (höchstens alle 12 Stunden).
+- **Sicherheits-Scans:** Android und der Hersteller (z. B. Xiaomi-Sicherheit, Google Play Protect) prüfen jede Installation selbst. Das kann die App nicht abschalten. In den Einstellungen dieser Systemdienste lässt sich die Prüfung für Apps aus anderen Quellen abschwächen oder ausschalten. Die Menünamen unterscheiden sich je nach Geräteversion.
 - Updates lassen sich nur über die alte App installieren, wenn der **Signaturschlüssel gleich** bleibt. Dafür sorgt das Secret `KEYSTORE_B64`. Es darf nie geändert oder gelöscht werden.
 - Die Web-Version aktualisiert sich beim Neuladen selbst.
 
