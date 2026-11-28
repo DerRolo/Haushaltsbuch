@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0E6B5B"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<html lang="de"><head><meta charset="utf-8"><script src="theme.js"></script><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0E6B5B"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{margin:0}body{font:14px/1.45 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}#fab{position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:24;border-radius:999px;padding:13px 24px;font-size:16px;box-shadow:0 4px 14px rgba(0,0,0,.28)}#fab[hidden]{display:none}@media(min-width:860px){#fab{bottom:24px}.btn.pri.dis{opacity:.45;filter:grayscale(1)}}
 .ktype{display:flex;width:100%;margin-bottom:8px}.ktype button{flex:1}
 </style>
@@ -267,6 +267,7 @@ I18N.add({
 "Tipp: Lege zuerst die Konten an, die du hast (zum Beispiel Girokonto und Bargeld). Der Stand, den du eingibst, ist dein Startsaldo und zählt nicht als Einnahme.":"Tip: first create the accounts you have (for example checking account and cash). The balance you enter is your opening balance and does not count as income."
 });
 I18N.add({"{} 1. Konten anlegen":"{} 1. Create accounts","{} 2. Erste Buchung eintragen":"{} 2. Enter your first entry","{} 3. Regelmäßiges anlegen":"{} 3. Set up recurring items"});
+I18N.add({"Design":"Design","Hell oder dunkel":"Light or dark","Farbschema":"Color scheme","System":"System","Hell":"Light","Dunkel":"Dark","Ozean":"Ocean","Wald":"Forest","Sonnenuntergang":"Sunset","Lavendel":"Lavender","Rosé":"Rosé","Graphit":"Graphite","Sepia":"Sepia","AMOLED-Schwarz":"AMOLED black"});
 </script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
@@ -1040,10 +1041,10 @@ function startCard(){
 const startUpd=()=>{const sc=$('#startcard');if(sc)sc.innerHTML=startCard()};
 const _ve=V.eintragen;V.eintragen=()=>'<div id="startcard">'+startCard()+'</div>'+_ve();
 const _vk=V.konten;V.konten=()=>startCard()+_vk();
-const APP_VER='4.12',APP_DATE='27.11.2026';
+const APP_VER='4.13',APP_DATE='27.11.2026';
 const verCard=()=>(window.UPD||{html:()=>'',setVer(){}}).html('Haushaltsbuch',APP_VER,APP_DATE);(window.UPD||{setVer(){}}).setVer('Haushaltsbuch',APP_VER);
 const langCard=()=>`<div class="card flat"><div style="padding:12px 14px"><h3>Sprache</h3><div class="btns" style="margin-top:8px">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button class="btn sm ${(window.I18N&&I18N.lang())===k?'pri':'ghost'}" data-act="lang" data-v="${k}">${l}</button>`).join('')}</div></div></div>`;
-V.einstellungen=()=>`${ghCard()}${langCard()}${verCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>
+V.einstellungen=()=>`${ghCard()}${langCard()}${window.THEME?THEME.html():''}${verCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>
 <div class="card flat"><div style="padding:12px 14px"><h3>Zusatz-Kategorien ${ib('zusatz')}</h3></div>${catList('zusatz','zusatz',false)}</div>
 <div class="card flat"><div style="padding:12px 14px"><h3>Steuer-Kategorien ${ib('st')}</h3></div>${catList('steuerKats','st',false)}</div>
 <form class="card" data-form="pausch"><h3>Fahrtenpauschale</h3><div class="row2"><div class="field"><label for="pa">€ pro Kilometer</label><input id="pa" inputmode="decimal" value="${numIn(CFG().pausch)}"></div><div class="field"><label>&nbsp;</label><button class="btn" type="submit">Speichern</button></div></div></form>

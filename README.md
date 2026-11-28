@@ -63,6 +63,9 @@ Für den Alltag: schnell buchen, übersichtlich auswerten, nichts doppelt pflege
 
 Ein vollständiges Buch für deine Coins, gebaut für die deutsche Steuer, aber auch einfach als Übersicht nutzbar.
 
+### Design
+In den Einstellungen beider Apps wählst du **Hell, Dunkel oder System** und ein **Farbschema**: Standard, Ozean, Wald, Sonnenuntergang, Lavendel, Rosé, Graphit, Sepia oder AMOLED-Schwarz. Jedes Schema gibt es in hell und dunkel. Die Wahl gilt für beide Apps zusammen.
+
 ### Verbinden
 Beim ersten Start fragt jede App nach dem Daten-Repository: entweder per **Kopplungscode** von einem schon verbundenen Gerät oder **von Hand** mit GitHub-Name, Repository-Name und Zugangs-Token (leere Felder, Vorgaben als graue Platzhalter). Das Krypto-Buch kann zusätzlich den **Zugang des Haushaltsbuchs** übernehmen. Es legt dafür ein eigenes Repository `krypto-daten` an, damit sich die Apps nicht überschreiben.
 
