@@ -63,6 +63,12 @@ Für den Alltag: schnell buchen, übersichtlich auswerten, nichts doppelt pflege
 
 Ein vollständiges Buch für deine Coins, gebaut für die deutsche Steuer, aber auch einfach als Übersicht nutzbar.
 
+### Version und Updates
+- Oben rechts steht die Version (zum Beispiel `v4.9`). Unten in den Einstellungen zeigt „Version … Details und Updates“ App-Version, Build-Nummer der APK, Plattform und Repository.
+- **Nach Update suchen** (nur sinnvoll in der Android-App) liest die neueste **Release** im öffentlichen GitHub-Repository. Gibt es eine neuere APK, erscheint „Update verfügbar“ mit **Herunterladen**. Danach die geladene Datei antippen und installieren. Optional sucht die App beim Start von selbst (höchstens alle 12 Stunden).
+- Updates lassen sich nur über die alte App installieren, wenn der **Signaturschlüssel gleich** bleibt. Dafür sorgt das Secret `KEYSTORE_B64`. Es darf nie geändert oder gelöscht werden.
+- Die Web-Version aktualisiert sich beim Neuladen selbst.
+
 ### Benachrichtigungen (Glocke)
 - Oben rechts zeigt die **Glocke** mit roter Zahl, was neu ist: neue **Auffälligkeiten** nach dem Synchronisieren und Coins, die **ab jetzt steuerfrei** sind (Haltefrist von einem Jahr erreicht). Antippen öffnet die Liste, die Zahl verschwindet. Ein Eintrag führt direkt zur Buchung oder Ansicht. Die Liste gilt pro Gerät und prüft beim Öffnen der App.
 - **Einstellungen** sind in beiden Apps das **Zahnrad**. Der Wechsel zwischen Haushalt und Krypto sitzt direkt links davon.

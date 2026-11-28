@@ -377,6 +377,7 @@ I18N.add({"Benachrichtigungen":"Notifications","Keine Benachrichtigungen.":"No n
 I18N.add({"Wallet gelöscht":"Wallet deleted"});
 I18N.add({"⚡ Ähnliche Buchung gefunden":"⚡ Similar booking found","Gefunden bei der Synchronisation":"Found while syncing","✓ Ja, dieselbe Transaktion":"✓ Yes, same transaction","⇄ Durch Transfer ersetzen":"⇄ Replace with transfer","Passt keine? Dann unten manuell zuordnen.":"None fits? Then assign manually below.","Fehler beim Synchronisieren":"Error while syncing","BNB Beacon Chain (BEP2)":"BNB Beacon Chain (BEP2)","Nur Netzwerke, die zur Adresse passen.":"Only networks that fit the address.","Es fehlt noch: ":"Still missing: "});
 </script>
+<script src="upd.js"></script>
 <script src="ghk.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
@@ -818,7 +819,7 @@ const introK=()=>{const noW=!S.wallets.length,noT=!S.tx.length;if(!(noW||noT)||U
   <div class="small muted">Wallets lassen sich jederzeit umbenennen, archivieren (ausgeblendet, Buchungen bleiben für die Steuer) oder zusammenführen.</div>
   <div class="btns">${noW?'<button class="btn pri" data-act="wNew">Erstes Wallet anlegen</button>':'<button class="btn pri" data-act="impOpen">Buchungen importieren</button><button class="btn" data-act="go" data-v="buchen">Von Hand buchen</button>'}<button class="btn ghost" data-act="introX">Ausblenden</button></div></div>`};
 const _vb0=V.buchen;V.buchen=()=>`<div class="seg" style="align-self:flex-start">${[['form','Eintragen'],['rec','Regelmäßig'],['import','Importieren']].map(([k,l])=>`<button class="${BM===k?'on':''}" data-act="bm" data-v="${k}">${l}</button>`).join('')}</div>`+(BM==='import'?V.import():BM==='rec'?recCard():_vb0());
-const APP_VER='4.8',APP_DATE='27.11.2026';
+const APP_VER='4.9',APP_DATE='27.11.2026';
 const _ue=V.uebersicht;V.uebersicht=()=>introK()+_ue();
 /* ---------- Regelmäßige Buchungen ---------- */
 const IVS={d:'täglich',w:'wöchentlich',w2:'alle 2 Wochen',m:'monatlich',q:'vierteljährlich',y:'jährlich'};
@@ -1269,7 +1270,7 @@ window.addEventListener('popstate',e=>{const q=e.state;if(!q)return;view=q.view|
   E=q.e?(q.e==='new'?newE():(S.tx.find(t=>t.i===q.e)?toE(S.tx.find(t=>t.i===q.e)):null)):null;
   W=q.w?(q.w==='new'?wnorm({id:'',n:'',st:'aktiv'}):wnorm(JSON.parse(JSON.stringify(S.wallets.find(x=>x.id===q.w)||{})))):null;render()});
 document.addEventListener('pointermove',chMove);document.addEventListener('pointerdown',chMove);
-const _mehr0=V.mehr;V.mehr=()=>_mehr0()+`<div class="vers">Krypto-Buch · Version ${APP_VER} (${APP_DATE})</div>`;
+const _mehr0=V.mehr;V.mehr=()=>_mehr0()+(window.UPD||{html:()=>'',setVer(){}}).html('Krypto-Buch',APP_VER,APP_DATE);(window.UPD||{setVer(){}}).setVer('Krypto-Buch',APP_VER);
 start();
 if('serviceWorker' in navigator&&KB&&!KB.isNative()&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>

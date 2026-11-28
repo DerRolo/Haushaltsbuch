@@ -270,6 +270,7 @@ I18N.add({"{} 1. Konten anlegen":"{} 1. Create accounts","{} 2. Erste Buchung ei
 </script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js"></script>
+<script src="upd.js"></script>
 <script src="gh.js"></script>
 <script>
 'use strict';
@@ -1039,8 +1040,8 @@ function startCard(){
 const startUpd=()=>{const sc=$('#startcard');if(sc)sc.innerHTML=startCard()};
 const _ve=V.eintragen;V.eintragen=()=>'<div id="startcard">'+startCard()+'</div>'+_ve();
 const _vk=V.konten;V.konten=()=>startCard()+_vk();
-const APP_VER='4.8',APP_DATE='27.11.2026';
-const verCard=()=>`<div class="vers">Haushaltsbuch · Version ${APP_VER} (${APP_DATE})</div>`;
+const APP_VER='4.9',APP_DATE='27.11.2026';
+const verCard=()=>(window.UPD||{html:()=>'',setVer(){}}).html('Haushaltsbuch',APP_VER,APP_DATE);(window.UPD||{setVer(){}}).setVer('Haushaltsbuch',APP_VER);
 const langCard=()=>`<div class="card flat"><div style="padding:12px 14px"><h3>Sprache</h3><div class="btns" style="margin-top:8px">${[['de','Deutsch'],['en','English']].map(([k,l])=>`<button class="btn sm ${(window.I18N&&I18N.lang())===k?'pri':'ghost'}" data-act="lang" data-v="${k}">${l}</button>`).join('')}</div></div></div>`;
 V.einstellungen=()=>`${ghCard()}${langCard()}${verCard()}<div class="card flat"><div style="padding:12px 14px"><h3>Kategorien ${ib('kats')}</h3><div class="small muted">Archivieren blendet aus, Löschen geht nur bei Kategorien ohne Buchungen.</div></div>${catList('kats','kats',true)}</div>
 <div class="card flat"><div style="padding:12px 14px"><h3>Zusatz-Kategorien ${ib('zusatz')}</h3></div>${catList('zusatz','zusatz',false)}</div>

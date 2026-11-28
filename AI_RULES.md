@@ -150,6 +150,8 @@ Bei jeder Anforderung zuerst klären, ob sie betrifft:
 - **Wallet-Karten in Listen** (Auffälligkeiten) haben eine farbige Kopfzeile mit Initiale, großem Namen und Pfeil. Ein Tipp darauf öffnet das Wallet.
 - **Netzwerk-Auswahl** zeigt nur Netzwerke, die zur eingegebenen Adresse passen. BNB Beacon Chain (BEP2, `bnb1…`) ist nur noch ein Hinweis, die Chain wurde eingestellt.
 - **Haushalt „Buchen“-Knopf:** grau, solange Pflichtfelder fehlen. Tippen zeigt „Es fehlt noch: …“. Der schwebende Knopf erscheint nur, wenn der feste Buchen-Knopf weiter unten liegt, nie darunter.
+- **Version und Updates:** Die Version steht oben rechts (`v4.9` neben dem Sync-Status) und ausführlich unten in den Einstellungen („Version … Details und Updates“). Beide Apps nutzen dieselbe Datei `www/upd.js`. Bei jeder Änderung `APP_VER` in beiden Apps erhöhen und `CACHE` in `sw.js` mitziehen.
+- **APK-Updates:** Der Workflow `apk.yml` schreibt `www/app-info.json` (Repository, Build-Code, Build-Name) in die APK und nimmt den Build-Code (Minuten seit 1970) als `versionCode`, damit er nie sinkt. Der Release-Text enthält `Build-Code: …`, daran erkennt die App ein neueres Release. Der Signaturschlüssel (`KEYSTORE_B64`) darf **nie** geändert werden.
 - **Spam** muss sich überall markieren und wieder freigeben lassen.
 - **NFTs und Sonstiges** zählen nicht in Gesamtwert und Anteile, bleiben aber für die Steuer erhalten.
 - **Kategorien** werden in zwei Schritten gewählt: Ausgabe, Einnahme, Intern, dann die passenden Kategorien.
